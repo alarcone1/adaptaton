@@ -170,6 +170,7 @@ export type Database = {
                     partner_name: string | null
                     target_cohort_type: Database["public"]["Enums"]["cohort_type"] | null
                     title: string
+                    partner_id: string | null
                 }
                 Insert: {
                     created_at?: string | null
@@ -179,6 +180,7 @@ export type Database = {
                     partner_name?: string | null
                     target_cohort_type?: Database["public"]["Enums"]["cohort_type"] | null
                     title: string
+                    partner_id?: string | null
                 }
                 Update: {
                     created_at?: string | null
@@ -188,8 +190,17 @@ export type Database = {
                     partner_name?: string | null
                     target_cohort_type?: Database["public"]["Enums"]["cohort_type"] | null
                     title: string
+                    partner_id?: string | null
                 }
-                Relationships: []
+                Relationships: [
+                    {
+                        foreignKeyName: "opportunities_partner_id_fkey"
+                        columns: ["partner_id"]
+                        isOneToOne: false
+                        referencedRelation: "profiles"
+                        referencedColumns: ["id"]
+                    }
+                ]
             }
             profiles: {
                 Row: {
@@ -257,25 +268,30 @@ export type Database = {
     }
 }
 
+type PublicSchema = Database[Extract<keyof Database, "public">]
+
 export type Tables<
     PublicTableNameOrOptions extends
-    | keyof (Database["public"]["Tables"] & Database["public"]["Views"])
+    | keyof (PublicSchema["Tables"] & PublicSchema["Views"])
     | { schema: keyof Database },
     TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
-    ? keyof (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
-        Database[PublicTableNameOrOptions["schema"]]["Views"])
-    : never = never,
+    ? keyof (Database[PublicTableNameOrOptions["schema"]] & any)["Tables"] &
+    keyof (Database[PublicTableNameOrOptions["schema"]] & any)["Views"]
+    : never = never
 > = PublicTableNameOrOptions extends { schema: keyof Database }
-    ? (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
-        Database[PublicTableNameOrOptions["schema"]]["Views"])[TableName] extends {
-            Row: infer R
-        }
+    ? (Database[PublicTableNameOrOptions["schema"]] & any)["Tables"][TableName] extends {
+        Row: infer R
+    }
+    ? R
+    : (Database[PublicTableNameOrOptions["schema"]] & any)["Views"][TableName] extends {
+        Row: infer R
+    }
     ? R
     : never
-    : PublicTableNameOrOptions extends keyof (Database["public"]["Tables"] &
-        Database["public"]["Views"])
-    ? (Database["public"]["Tables"] &
-        Database["public"]["Views"])[PublicTableNameOrOptions] extends {
+    : PublicTableNameOrOptions extends keyof (PublicSchema["Tables"] &
+        PublicSchema["Views"])
+    ? (PublicSchema["Tables"] &
+        PublicSchema["Views"])[PublicTableNameOrOptions] extends {
             Row: infer R
         }
     ? R
@@ -284,19 +300,19 @@ export type Tables<
 
 export type TablesInsert<
     PublicTableNameOrOptions extends
-    | keyof Database["public"]["Tables"]
+    | keyof PublicSchema["Tables"]
     | { schema: keyof Database },
     TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
-    ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    ? keyof (Database[PublicTableNameOrOptions["schema"]] & any)["Tables"]
+    : never = never
 > = PublicTableNameOrOptions extends { schema: keyof Database }
-    ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+    ? (Database[PublicTableNameOrOptions["schema"]] & any)["Tables"][TableName] extends {
         Insert: infer I
     }
     ? I
     : never
-    : PublicTableNameOrOptions extends keyof Database["public"]["Tables"]
-    ? Database["public"]["Tables"][PublicTableNameOrOptions] extends {
+    : PublicTableNameOrOptions extends keyof PublicSchema["Tables"]
+    ? PublicSchema["Tables"][PublicTableNameOrOptions] extends {
         Insert: infer I
     }
     ? I
@@ -305,19 +321,19 @@ export type TablesInsert<
 
 export type TablesUpdate<
     PublicTableNameOrOptions extends
-    | keyof Database["public"]["Tables"]
+    | keyof PublicSchema["Tables"]
     | { schema: keyof Database },
     TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
-    ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    ? keyof (Database[PublicTableNameOrOptions["schema"]] & any)["Tables"]
+    : never = never
 > = PublicTableNameOrOptions extends { schema: keyof Database }
-    ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+    ? (Database[PublicTableNameOrOptions["schema"]] & any)["Tables"][TableName] extends {
         Update: infer U
     }
     ? U
     : never
-    : PublicTableNameOrOptions extends keyof Database["public"]["Tables"]
-    ? Database["public"]["Tables"][PublicTableNameOrOptions] extends {
+    : PublicTableNameOrOptions extends keyof PublicSchema["Tables"]
+    ? PublicSchema["Tables"][PublicTableNameOrOptions] extends {
         Update: infer U
     }
     ? U
@@ -325,29 +341,29 @@ export type TablesUpdate<
     : never
 
 export type Enums<
-    DefaultSchemaEnumNameOrOptions extends
-    | keyof Database["public"]["Enums"]
+    PublicEnumNameOrOptions extends
+    | keyof PublicSchema["Enums"]
     | { schema: keyof Database },
-    EnumName extends DefaultSchemaEnumNameOrOptions extends { schema: keyof Database }
-    ? keyof Database[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
-> = DefaultSchemaEnumNameOrOptions extends { schema: keyof Database }
-    ? Database[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
-    : DefaultSchemaEnumNameOrOptions extends keyof Database["public"]["Enums"]
-    ? Database["public"]["Enums"][DefaultSchemaEnumNameOrOptions]
+    EnumName extends PublicEnumNameOrOptions extends { schema: keyof Database }
+    ? keyof (Database[PublicEnumNameOrOptions["schema"]] & any)["Enums"]
+    : never = never
+> = PublicEnumNameOrOptions extends { schema: keyof Database }
+    ? (Database[PublicEnumNameOrOptions["schema"]] & any)["Enums"][EnumName]
+    : PublicEnumNameOrOptions extends keyof PublicSchema["Enums"]
+    ? PublicSchema["Enums"][PublicEnumNameOrOptions]
     : never
 
 export type CompositeTypes<
     PublicCompositeTypeNameOrOptions extends
-    | keyof Database["public"]["CompositeTypes"]
+    | keyof PublicSchema["CompositeTypes"]
     | { schema: keyof Database },
     CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
         schema: keyof Database
     }
-    ? keyof Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
+    ? keyof (Database[PublicCompositeTypeNameOrOptions["schema"]] & any)["CompositeTypes"]
+    : never = never
 > = PublicCompositeTypeNameOrOptions extends { schema: keyof Database }
-    ? Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
-    : PublicCompositeTypeNameOrOptions extends keyof Database["public"]["CompositeTypes"]
-    ? Database["public"]["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    ? (Database[PublicCompositeTypeNameOrOptions["schema"]] & any)["CompositeTypes"][CompositeTypeName]
+    : PublicCompositeTypeNameOrOptions extends keyof PublicSchema["CompositeTypes"]
+    ? PublicSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
     : never

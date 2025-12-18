@@ -19,6 +19,9 @@ export const CaptureEvidence = () => {
     const fileInputRef = useRef<HTMLInputElement>(null)
     const [preview, setPreview] = useState<string | null>(null)
 
+    const [fileToUpload, setFileToUpload] = useState<File | null>(null)
+    const [isSubmitting, setIsSubmitting] = useState(false)
+
     useEffect(() => {
         // Fetch challenges for select
         supabase.from('challenges').select('id, title').then(({ data }) => {
@@ -29,6 +32,7 @@ export const CaptureEvidence = () => {
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0]
         if (file) {
+            setFileToUpload(file)
             const reader = new FileReader()
             reader.onloadend = () => {
                 setPreview(reader.result as string)
@@ -41,6 +45,8 @@ export const CaptureEvidence = () => {
         e.preventDefault()
         if (!user || !challengeId) return
 
+        setIsSubmitting(true)
+
         // Get Location
         navigator.geolocation.getCurrentPosition(
             async (pos) => {
@@ -49,56 +55,76 @@ export const CaptureEvidence = () => {
                     user_id: user.id,
                     description,
                     impact_data: { value: parseInt(impactValue) },
-                    gps_coords: { lat: pos.coords.latitude, long: pos.coords.longitude }, // Using simplified internal format
-                    // media_url: preview, // TODO: Handle real file upload logic vs Base64
-                    status: 'draft' as const, // Forced cast for enum
-                    localId: crypto.randomUUID(), // Local ID for queue
+                    gps_coords: { lat: pos.coords.latitude, long: pos.coords.longitude },
+                    status: 'draft' as const,
+                    localId: crypto.randomUUID(),
                     timestamp: Date.now()
                 }
 
-                if (isOnline) {
-                    // Try direct upload (simplified)
-                    // TODO: Proper file upload to Storage Bucket first!
-                    setStatusMsg('Subiendo evidencia...')
+                try {
+                    if (isOnline) {
+                        setStatusMsg('Subiendo foto...')
+                        let mediaUrl = null
 
-                    // Mock upload for prototype speed
-                    const { error } = await supabase.from('evidences').insert({
-                        ...evidenceData,
-                        status: 'submitted',
-                        // exclude localId/timestamp
-                        challenge_id: evidenceData.challenge_id,
-                        user_id: evidenceData.user_id,
-                        description: evidenceData.description,
-                        impact_data: evidenceData.impact_data as any,
-                        gps_coords: evidenceData.gps_coords as any,
-                    })
+                        if (fileToUpload) {
+                            const fileExt = fileToUpload.name.split('.').pop()
+                            const fileName = `${user.id}/${Date.now()}.${fileExt}`
 
-                    if (!error) {
+                            const { error: uploadError } = await supabase.storage
+                                .from('evidence-media')
+                                .upload(fileName, fileToUpload)
+
+                            if (uploadError) throw uploadError
+
+                            const { data: { publicUrl } } = supabase.storage
+                                .from('evidence-media')
+                                .getPublicUrl(fileName)
+
+                            mediaUrl = publicUrl
+                        }
+
+                        setStatusMsg('Guardando evidencia...')
+                        const { error } = await supabase.from('evidences').insert({
+                            ...evidenceData,
+                            status: 'submitted',
+                            media_url: mediaUrl,
+                            // Type casting for strict DB types vs local convenience
+                            description: evidenceData.description,
+                            impact_data: evidenceData.impact_data as any,
+                            gps_coords: evidenceData.gps_coords as any,
+                        })
+
+                        if (error) throw error
+
                         alert('¡Evidencia enviada con éxito!')
                         navigate('/student')
+
                     } else {
-                        alert('Error al enviar. ' + error.message)
+                        // Save to Queue
+                        setStatusMsg('Guardando en dispositivo...')
+
+                        await addToQueue({
+                            ...evidenceData,
+                            // @ts-ignore
+                            gps_coords: evidenceData.gps_coords,
+                            impact_data: evidenceData.impact_data as any,
+                            status: 'draft',
+                            mediaBlob: fileToUpload || undefined
+                        })
+
+                        alert('Guardado en dispositivo. Se subirá cuando tengas conexión.')
+                        navigate('/student')
                     }
-
-                } else {
-                    // Save to Queue
-                    // We need to fit strictly to OfflineEvidence type which extends insert row
-                    // We cheat a bit on types for MVP speed
-                    addToQueue({
-                        ...evidenceData,
-                        challenge_id: evidenceData.challenge_id,
-                        user_id: evidenceData.user_id,
-                        // @ts-ignore
-                        gps_coords: evidenceData.gps_coords,
-                        impact_data: evidenceData.impact_data as any,
-                        status: 'draft'
-                    } as any)
-
-                    alert('Guardado en dispositivo. Se subirá cuando tengas conexión.')
-                    navigate('/student')
+                } catch (error: any) {
+                    console.error('Error submitting:', error)
+                    alert('Error: ' + error.message)
+                    setStatusMsg('')
+                } finally {
+                    setIsSubmitting(false)
                 }
             },
             (err) => {
+                setIsSubmitting(false)
                 alert('Necesitamos tu ubicación para validar el impacto. ' + err.message)
             }
         )
@@ -165,9 +191,10 @@ export const CaptureEvidence = () => {
                 <div className="pt-4">
                     <button
                         type="submit"
-                        className="w-full bg-secondary text-white font-bold py-4 rounded-xl shadow-lg hover:bg-opacity-90 transition-all active:scale-95"
+                        disabled={isSubmitting}
+                        className="w-full bg-secondary text-white font-bold py-4 rounded-xl shadow-lg hover:bg-opacity-90 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        {isOnline ? 'Enviar Evidencia' : 'Guardar (Offline)'}
+                        {isSubmitting ? 'Procesando...' : (isOnline ? 'Enviar Evidencia' : 'Guardar (Offline)')}
                     </button>
                     {statusMsg && <p className="text-center text-sm text-primary mt-2">{statusMsg}</p>}
                 </div>

@@ -28,7 +28,7 @@ const ProtectedRoute = ({ children, allowedRoles }: { children: React.ReactNode,
 }
 
 function Approutes() {
-  const { role, loading } = useAuth()
+  const { loading } = useAuth()
   const { isOnline, isSyncing } = useOfflineSync()
 
   if (loading) return <div className="h-screen flex items-center justify-center text-primary">Cargando Adaptatón...</div>

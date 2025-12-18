@@ -17,13 +17,13 @@ export const Login = () => {
     // 1. Check if ANY admin exists and get ALL role emails
     useEffect(() => {
         const checkAdmin = async () => {
-            const { data: hasAdminData, error: hasAdminError } = await supabase.rpc('app_has_admin')
+            const { data: hasAdminData, error: hasAdminError } = await (supabase as any).rpc('app_has_admin')
             if (!hasAdminError && hasAdminData !== null) {
                 setHasAdmin(hasAdminData)
 
                 // If there is an admin, get emails for all roles
                 if (hasAdminData) {
-                    const { data: emailsData } = await supabase.rpc('get_role_emails')
+                    const { data: emailsData } = await (supabase as any).rpc('get_role_emails')
                     if (emailsData) {
                         setRoleEmails(emailsData as Record<string, string>)
                     }
@@ -138,7 +138,7 @@ export const Login = () => {
 
                         <button
                             type="submit"
-                            disabled={loading || (session && !!role)}
+                            disabled={loading || !!(session && role)}
                             className="w-full bg-primary hover:bg-primary-dark text-white font-bold py-4 rounded-xl transition-all disabled:opacity-50 shadow-lg hover:shadow-primary/20"
                         >
                             {loading ? 'Iniciando Sesión...' : (session && role ? 'Redirigiendo...' : 'Iniciar Sesión')}

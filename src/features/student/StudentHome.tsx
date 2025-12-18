@@ -1,30 +1,76 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabase'
+import { useAuth } from '../../lib/AuthContext'
 import type { Database } from '../../lib/database.types'
 
 type Challenge = Database['public']['Tables']['challenges']['Row']
 
 export const StudentHome = () => {
+    const { session } = useAuth()
     const [challenges, setChallenges] = useState<Challenge[]>([])
     const [loading, setLoading] = useState(true)
+    const [progress, setProgress] = useState(0)
+    const [pointsEarned, setPointsEarned] = useState(0)
 
     useEffect(() => {
-        fetchChallenges()
-    }, [])
+        if (session?.user) fetchData()
+    }, [session])
 
-    const fetchChallenges = async () => {
-        const { data } = await supabase.from('challenges').select('*')
-        if (data) setChallenges(data)
-        setLoading(false)
+    const fetchData = async () => {
+        try {
+            // 1. Get Challenges
+            const { data: challengesData } = await supabase.from('challenges').select('*')
+            if (!challengesData) return
+
+            setChallenges(challengesData)
+            const totalAvailablePoints = challengesData.reduce((acc, curr) => acc + (curr.points || 0), 0)
+
+            // 2. Get User's Validated Evidences
+            const { data: evidences } = await supabase
+                .from('evidences')
+                .select('challenge_id')
+                .eq('user_id', session!.user.id)
+                .eq('status', 'validated')
+
+            // 3. Calculate Points
+            let earned = 0
+            const completedChallengeIds = new Set(evidences?.map(e => e.challenge_id))
+
+            challengesData.forEach(c => {
+                if (completedChallengeIds.has(c.id)) {
+                    earned += (c.points || 0)
+                }
+            })
+
+            setPointsEarned(earned)
+            if (totalAvailablePoints > 0) {
+                setProgress(Math.round((earned / totalAvailablePoints) * 100))
+            } else {
+                setProgress(0)
+            }
+
+        } catch (error) {
+            console.error('Error fetching progress:', error)
+        } finally {
+            setLoading(false)
+        }
     }
 
     return (
         <div className="space-y-6">
             <header>
-                <h1 className="text-2xl font-bold text-primary">Mi Ruta de Impacto</h1>
-                <p className="text-text-secondary text-sm">Progreso: 35% (Simulado)</p>
-                <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2">
-                    <div className="bg-secondary h-2.5 rounded-full" style={{ width: '35%' }}></div>
+                <div className="flex justify-between items-end mb-2">
+                    <div>
+                        <h1 className="text-2xl font-bold text-primary">Mi Ruta de Impacto</h1>
+                        <p className="text-text-secondary text-sm">Has generado {pointsEarned} puntos de impacto</p>
+                    </div>
+                    <span className="text-2xl font-bold text-secondary">{progress}%</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-3">
+                    <div
+                        className="bg-secondary h-3 rounded-full transition-all duration-1000 ease-out"
+                        style={{ width: `${progress}%` }}
+                    ></div>
                 </div>
             </header>
 

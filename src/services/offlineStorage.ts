@@ -1,35 +1,34 @@
 import type { Database } from '../lib/database.types'
+import { get, set, del } from 'idb-keyval'
 
-export type OfflineEvidence = Database['public']['Tables']['evidences']['Insert'] & {
+export type OfflineEvidence = Omit<Database['public']['Tables']['evidences']['Insert'], 'status'> & {
     localId: string
-    localMediaFile?: string // Base64 string for photo if needed, or Blob stored in IndexedDB. For MVP, localStorage Base64 limit is tight.
-    // Better use IndexedDB for images? 
-    // For MVP rapid dev: allow small images or specific IDB library 'idb-keyval'.
-    // Let's assume for now we store metadata in LS and maybe image in IDB or just Base64 if small.
-    // We will simple store 'file' as null in queue and handle file separately? 
-    // Let's use specific helper for images.
+    // Store the file blob directly if available for offline mock
+    mediaBlob?: Blob
+    status: 'draft' // offline items are always draft until synced
     timestamp: number
 }
 
 const QUEUE_KEY = 'adaptaton_offline_queue'
 
-export const getQueue = (): OfflineEvidence[] => {
-    const str = localStorage.getItem(QUEUE_KEY)
-    return str ? JSON.parse(str) : []
+export const getQueue = async (): Promise<OfflineEvidence[]> => {
+    const queue = await get<OfflineEvidence[]>(QUEUE_KEY)
+    return queue || []
 }
 
-export const addToQueue = (evidence: OfflineEvidence) => {
-    const queue = getQueue()
+export const addToQueue = async (evidence: OfflineEvidence) => {
+    const queue = await getQueue()
     queue.push(evidence)
-    localStorage.setItem(QUEUE_KEY, JSON.stringify(queue))
+    await set(QUEUE_KEY, queue)
 }
 
-export const removeFromQueue = (localId: string) => {
-    const queue = getQueue()
+export const removeFromQueue = async (localId: string) => {
+    const queue = await getQueue()
     const newQueue = queue.filter(item => item.localId !== localId)
-    localStorage.setItem(QUEUE_KEY, JSON.stringify(newQueue))
+    await set(QUEUE_KEY, newQueue)
 }
 
-export const clearQueue = () => {
-    localStorage.removeItem(QUEUE_KEY)
+export const clearQueue = async () => {
+    await del(QUEUE_KEY)
 }
+

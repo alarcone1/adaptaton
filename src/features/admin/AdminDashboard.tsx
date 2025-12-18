@@ -15,6 +15,7 @@ export const AdminDashboard = () => {
     const [showUserForm, setShowUserForm] = useState(false)
     const [success, setSuccess] = useState<string | null>(null)
     const [formError, setFormError] = useState<string | null>(null)
+    const [stats, setStats] = useState({ users: 0, evidence: 0, impact: 0 })
 
     // User Form State
     const [newUser, setNewUser] = useState({
@@ -55,8 +56,22 @@ export const AdminDashboard = () => {
         // Order by created_at desc to see new ones
         const { data: usersData } = await supabase.from('profiles').select('*').order('created_at', { ascending: false }).limit(50)
 
+        // Stats Fetching
+        const { count: usersCount } = await supabase.from('profiles').select('*', { count: 'exact', head: true })
+        const { count: evidenceCount } = await supabase.from('evidences').select('*', { count: 'exact', head: true })
+
+        // Impact Calculation: Fetch only validated impact data
+        const { data: impactData } = await supabase
+            .from('evidences')
+            .select('impact_data')
+            .eq('status', 'validated')
+
+        const totalImpact = impactData?.reduce((acc, curr) => acc + ((curr.impact_data as any)?.value || 0), 0) || 0
+
         if (cohortsData) setCohorts(cohortsData)
         if (usersData) setUsers(usersData)
+        setStats({ users: usersCount || 0, evidence: evidenceCount || 0, impact: totalImpact })
+
         setLoading(false)
     }
 
@@ -202,6 +217,22 @@ export const AdminDashboard = () => {
                 <LogoutButton />
             </div>
             {loading && <p className="text-secondary animate-pulse">Cargando datos...</p>}
+
+            {/* Overview Stats */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-in slide-in-from-top-4 duration-500">
+                <div className="bg-surface p-6 rounded-xl shadow-md border-l-4 border-blue-500">
+                    <h3 className="text-text-secondary font-semibold text-sm uppercase">Total Usuarios</h3>
+                    <p className="text-3xl font-bold text-blue-600">{stats.users}</p>
+                </div>
+                <div className="bg-surface p-6 rounded-xl shadow-md border-l-4 border-purple-500">
+                    <h3 className="text-text-secondary font-semibold text-sm uppercase">Evidencias Subidas</h3>
+                    <p className="text-3xl font-bold text-purple-600">{stats.evidence}</p>
+                </div>
+                <div className="bg-surface p-6 rounded-xl shadow-md border-l-4 border-green-500">
+                    <h3 className="text-text-secondary font-semibold text-sm uppercase">Impacto Generado</h3>
+                    <p className="text-3xl font-bold text-green-600">{stats.impact} pts</p>
+                </div>
+            </div>
 
             {/* Users Section */}
             <section>

@@ -17,21 +17,45 @@ export const StudentOpportunities = () => {
     }, [])
 
     const handleInterest = async (oppId: string) => {
-        console.log('Interest in opp:', oppId)
-        // Check if lead exists? Or just insert.
-        // Assuming user is logged in (guaranteed by Layout)
+        const opp = opps.find(o => o.id === oppId)
+
+        // Validation
+        if (!opp?.partner_id) {
+            alert('Esta oportunidad no está vinculada a un aliado activo.')
+            return
+        }
+
         const { data: { user } } = await supabase.auth.getUser()
         if (!user) return
 
-        // We temporarily create a dummy lead or just log it, as schema mismatch discussed.
-        // Schema: leads(partner_id, student_id). We lack partner_id in opportunity.
-        // We will just alert for now.
+        try {
+            // Check for existing lead to prevent duplicates (optional UX improvement)
+            const { data: existing } = await supabase
+                .from('leads')
+                .select('id')
+                .eq('partner_id', opp.partner_id)
+                .eq('student_id', user.id)
+                .maybeSingle()
 
-        // Mock DB call to satisfy linter or logic flow if needed, but for now just Alert.
-        // To use 'supabase' and avoid unused var warning if we don't call it:
-        // await supabase.from('leads').select('*').limit(1) 
+            if (existing) {
+                alert('Ya has enviado tu interés para este aliado.')
+                return
+            }
 
-        alert('Gracias por tu interés. La Universidad coordinará este encuentro.')
+            const { error } = await supabase.from('leads').insert({
+                partner_id: opp.partner_id, // Now valid thanks to migration
+                student_id: user.id,
+                status: 'pending'
+            })
+
+            if (error) throw error
+
+            alert('¡Solicitud enviada! La Universidad conectará contigo pronto.')
+
+        } catch (err: any) {
+            console.error('Error creating lead:', err)
+            alert('Hubo un error al procesar tu solicitud.')
+        }
     }
 
     return (
