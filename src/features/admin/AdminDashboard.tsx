@@ -1,431 +1,298 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabase'
 import type { Database } from '../../lib/database.types'
-import { LogoutButton } from '../../components/LogoutButton'
-import { MoreVertical, Edit2, Trash2, Mail } from 'lucide-react'
 import { ConfirmModal } from '../../components/ConfirmModal'
+import { PageHeader } from '../../components/ui/PageHeader'
+import { Card } from '../../components/ui/Card'
+import { Button } from '../../components/ui/Button'
+import { Badge } from '../../components/ui/Badge'
+import { Layout } from '../../components/ui/Layout'
+import { Users, FileText, Activity, Trash2, Edit2, Plus, MoreVertical, Mail } from 'lucide-react'
 
-type Cohort = Database['public']['Tables']['cohorts']['Row']
 type Profile = Database['public']['Tables']['profiles']['Row']
 
 export const AdminDashboard = () => {
-    const [cohorts, setCohorts] = useState<Cohort[]>([])
     const [users, setUsers] = useState<Profile[]>([])
-    const [loading, setLoading] = useState(true)
+    const [_loading, setLoading] = useState(true)
+    const [stats, setStats] = useState({ users: 0, evidence: 0, impact: 0 })
     const [showUserForm, setShowUserForm] = useState(false)
+    const [editingId, setEditingId] = useState<string | null>(null)
     const [success, setSuccess] = useState<string | null>(null)
     const [formError, setFormError] = useState<string | null>(null)
-    const [stats, setStats] = useState({ users: 0, evidence: 0, impact: 0 })
-
-    // User Form State
-    const [newUser, setNewUser] = useState({
-        names: '',
-        last_name: '',
-        cedula: '',
-        phone: '',
-        email: '',
-        password: '',
-        role: 'student' as Database['public']['Enums']['user_role']
-    })
-
-    // Delete Modal State
     const [showDeleteModal, setShowDeleteModal] = useState(false)
     const [userToDelete, setUserToDelete] = useState<string | null>(null)
-    const [isDeleting, setIsDeleting] = useState(false)
-    const [editingId, setEditingId] = useState<string | null>(null)
-    const [actionMenuOpen, setActionMenuOpen] = useState<string | null>(null) // ID of user with open menu
+    const [_isDeleting, setIsDeleting] = useState(false)
+    const [newUser, setNewUser] = useState({ names: '', last_name: '', cedula: '', phone: '', email: '', password: '', role: 'student' as any })
+
     const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set())
+    const [activeMenu, setActiveMenu] = useState<string | null>(null)
 
-    const toggleSelection = (id: string) => {
-        const newSelected = new Set(selectedUsers)
-        if (newSelected.has(id)) {
-            newSelected.delete(id)
-        } else {
-            newSelected.add(id)
-        }
-        setSelectedUsers(newSelected)
-    }
-
-    useEffect(() => {
-        fetchData()
-    }, [])
+    useEffect(() => { fetchData() }, [])
 
     const fetchData = async () => {
         setLoading(true)
-        const { data: cohortsData } = await supabase.from('cohorts').select('*')
-        // Order by created_at desc to see new ones
-        const { data: usersData } = await supabase.from('profiles').select('*').order('created_at', { ascending: false }).limit(50)
-
-        // Stats Fetching
+        const { data: usersData } = await supabase.from('profiles').select('*').order('created_at', { ascending: false })
         const { count: usersCount } = await supabase.from('profiles').select('*', { count: 'exact', head: true })
         const { count: evidenceCount } = await supabase.from('evidences').select('*', { count: 'exact', head: true })
 
-        // Impact Calculation: Fetch only validated impact data
-        const { data: impactData } = await supabase
-            .from('evidences')
-            .select('impact_data')
-            .eq('status', 'validated')
-
+        const { data: impactData } = await supabase.from('evidences').select('impact_data').eq('status', 'validated')
         const totalImpact = impactData?.reduce((acc, curr) => acc + ((curr.impact_data as any)?.value || 0), 0) || 0
 
-        if (cohortsData) setCohorts(cohortsData)
         if (usersData) setUsers(usersData)
         setStats({ users: usersCount || 0, evidence: evidenceCount || 0, impact: totalImpact })
-
         setLoading(false)
     }
 
-    const createCohort = async () => {
-        const name = prompt('Nombre de la Cohorte:')
-        const type = prompt('Tipo (minor/adult):')
-        if (!name || (type !== 'minor' && type !== 'adult')) {
-            if (name) alert('Tipo inválido. Use "minor" o "adult".')
-            return
-        }
-
-        const { error } = await supabase.from('cohorts').insert({
-            name,
-            type: type as 'minor' | 'adult',
-            start_date: new Date().toISOString()
-        })
-
-        if (error) alert('Error: ' + error.message)
-        else fetchData()
+    const toggleSelection = (id: string) => {
+        const newSelection = new Set(selectedUsers)
+        if (newSelection.has(id)) newSelection.delete(id)
+        else newSelection.add(id)
+        setSelectedUsers(newSelection)
+        // Close menu if deselecting
+        if (activeMenu === id && selectedUsers.has(id)) setActiveMenu(null)
     }
 
     const handleCreateUser = async (e: React.FormEvent) => {
         e.preventDefault()
-        // Validation: Password required only for new users
         if (!newUser.email || (!editingId && !newUser.password)) return
-
         try {
-            // IF EDITING
             if (editingId) {
-                // Call Edge Function to update auth data AND profile
-                const { error } = await supabase.functions.invoke('update-user', {
-                    body: {
-                        user_id: editingId,
-                        email: newUser.email,
-                        password: newUser.password, // Optional, will be ignored if empty
-                        full_name: newUser.names,
-                        last_name: newUser.last_name,
-                        cedula: newUser.cedula,
-                        phone: newUser.phone,
-                        role: newUser.role
-                    }
-                })
-
+                const { error } = await supabase.functions.invoke('update-user', { body: { ...newUser, user_id: editingId, full_name: newUser.names } })
                 if (error) throw error
-
-                setSuccess('Usuario actualizado exitosamente')
-            }
-            // IF CREATING
-            else {
-                const { error } = await supabase.functions.invoke('create-user', {
-                    body: {
-                        email: newUser.email,
-                        password: newUser.password,
-                        full_name: newUser.names,
-                        last_name: newUser.last_name,
-                        cedula: newUser.cedula,
-                        phone: newUser.phone,
-                        role: newUser.role
-                    }
-                })
+                setSuccess('Usuario actualizado')
+            } else {
+                const { error } = await supabase.functions.invoke('create-user', { body: { ...newUser, full_name: newUser.names } })
                 if (error) throw error
-                setSuccess('Usuario creado exitosamente. Se ha enviado un correo de validación.')
+                setSuccess('Usuario creado')
             }
-
             setShowUserForm(false)
             setEditingId(null)
-            setNewUser({
-                names: '', last_name: '', cedula: '', phone: '', email: '', password: '', role: 'student'
-            })
+            setNewUser({ names: '', last_name: '', cedula: '', phone: '', email: '', password: '', role: 'student' })
             fetchData()
-
-        } catch (err: any) {
-            setFormError('Error: ' + err.message)
-        }
-    }
-
-    const startEdit = (user: Profile) => {
-        setNewUser({
-            names: user.full_name || '',
-            last_name: user.last_name || '',
-            cedula: user.cedula || '',
-            phone: user.phone || '',
-            email: (user as any).email || '',
-            password: '', // Don't show password
-            role: user.role || 'student'
-        })
-        setEditingId(user.id)
-        setShowUserForm(true)
-        setActionMenuOpen(null)
-        setSuccess(null)
-        setFormError(null)
-    }
-
-    const requestDelete = (id: string) => {
-        setUserToDelete(id)
-        setShowDeleteModal(true)
-        setActionMenuOpen(null)
+        } catch (err: any) { setFormError('Error: ' + err.message) }
     }
 
     const confirmDelete = async () => {
         if (!userToDelete) return
         setIsDeleting(true)
         try {
-            // Call Edge Function to delete from auth.users (cascade to profiles)
-            const { error } = await supabase.functions.invoke('delete-user', {
-                body: { user_id: userToDelete }
-            })
+            const { error } = await supabase.functions.invoke('delete-user', { body: { user_id: userToDelete } })
             if (error) throw error
-
-            setSuccess('Usuario eliminado correctamente')
+            setSuccess('Usuario eliminado')
             fetchData()
-        } catch (err: any) {
-            setFormError('No se pudo eliminar: ' + err.message)
-        } finally {
-            setIsDeleting(false)
-            setShowDeleteModal(false)
-            setUserToDelete(null)
-        }
+        } catch (err: any) { setFormError(err.message) }
+        finally { setIsDeleting(false); setShowDeleteModal(false) }
     }
 
-    const resendEmail = async (email: string) => {
+    const handleResendInvite = async (email: string) => {
         try {
-            setSuccess(null)
-            setFormError(null)
-            const { error } = await supabase.functions.invoke('resend-invite', {
-                body: { email }
-            })
+            const { error } = await supabase.functions.invoke('resend-invite', { body: { email } })
             if (error) throw error
-            setSuccess('Correo de confirmación reenviado exitosamente a ' + email)
+            setSuccess(`Invitación reenviada a ${email}`)
+            setActiveMenu(null)
         } catch (err: any) {
-            setFormError('Error al reenviar correo: ' + err.message)
+            alert('Error enviando correo: ' + err.message)
         }
-        setActionMenuOpen(null)
     }
 
     return (
-        <div className="p-6 space-y-8 min-h-screen bg-background">
-            <div className="flex justify-between items-center border-b pb-4">
-                <div className="flex items-center gap-4">
-                    <h1 className="text-3xl font-bold text-primary">Torre de Control</h1>
-                    <span className="bg-red-100 text-red-800 text-xs font-bold px-2.5 py-0.5 rounded border border-red-200">Rol: Administrador</span>
-                </div>
-                <LogoutButton />
-            </div>
-            {loading && <p className="text-secondary animate-pulse">Cargando datos...</p>}
+        <Layout>
+            <div className="p-4 md:p-8 space-y-8 max-w-7xl mx-auto min-h-screen" onClick={() => setActiveMenu(null)}>
+                <PageHeader title="Torre de Control" subtitle="Gestión centralizada de la plataforma." role="Admin" roleColor="red" />
 
-            {/* Overview Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-in slide-in-from-top-4 duration-500">
-                <div className="bg-surface p-6 rounded-xl shadow-md border-l-4 border-blue-500">
-                    <h3 className="text-text-secondary font-semibold text-sm uppercase">Total Usuarios</h3>
-                    <p className="text-3xl font-bold text-blue-600">{stats.users}</p>
-                </div>
-                <div className="bg-surface p-6 rounded-xl shadow-md border-l-4 border-purple-500">
-                    <h3 className="text-text-secondary font-semibold text-sm uppercase">Evidencias Subidas</h3>
-                    <p className="text-3xl font-bold text-purple-600">{stats.evidence}</p>
-                </div>
-                <div className="bg-surface p-6 rounded-xl shadow-md border-l-4 border-green-500">
-                    <h3 className="text-text-secondary font-semibold text-sm uppercase">Impacto Generado</h3>
-                    <p className="text-3xl font-bold text-green-600">{stats.impact} pts</p>
-                </div>
-            </div>
-
-            {/* Users Section */}
-            <section>
-                <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-xl font-bold text-secondary">Gestión de Usuarios</h2>
-                    <button
-                        onClick={() => {
-                            if (!showUserForm) {
-                                setEditingId(null)
-                                setNewUser({
-                                    names: '', last_name: '', cedula: '', phone: '', email: '', password: '', role: 'student'
-                                })
-                            }
-                            setShowUserForm(!showUserForm)
-                            setSuccess(null)
-                            setFormError(null)
-                        }}
-                        className="bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-lg shadow transition-all"
-                    >
-                        {showUserForm ? 'Cancelar' : '+ Crear Usuario'}
-                    </button>
-                </div>
-
-                {showUserForm && (
-                    <div className="bg-surface p-6 rounded-xl shadow-lg border border-border mb-8 animate-in fade-in slide-in-from-top-4">
-                        <div className="flex justify-between items-center mb-4">
-                            <h3 className="font-bold text-lg">{editingId ? 'Editar Usuario' : 'Nuevo Usuario'}</h3>
-                            <button onClick={() => setShowUserForm(false)} className="text-gray-500 hover:text-gray-700">&times;</button>
+                {/* Stats Overview */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <Card className="flex items-center gap-4 !bg-white/70 border-l-4 border-l-blue-500">
+                        <div className="p-3 bg-blue-100 rounded-full text-blue-600"><Users size={24} /></div>
+                        <div>
+                            <p className="text-sm font-bold text-text-secondary uppercase">Usuarios</p>
+                            <p className="text-3xl font-black text-primary">{stats.users}</p>
                         </div>
-                        <form onSubmit={handleCreateUser} className="space-y-4">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <input placeholder="Nombres" className="border p-2 rounded" value={newUser.names} onChange={e => setNewUser({ ...newUser, names: e.target.value })} required />
-                                <input placeholder="Apellidos" className="border p-2 rounded" value={newUser.last_name} onChange={e => setNewUser({ ...newUser, last_name: e.target.value })} required />
-                                <input placeholder="Cédula" className="border p-2 rounded" value={newUser.cedula} onChange={e => setNewUser({ ...newUser, cedula: e.target.value })} required />
-                                <input placeholder="Teléfono" className="border p-2 rounded" value={newUser.phone} onChange={e => setNewUser({ ...newUser, phone: e.target.value })} required />
-                                <input placeholder="Correo" type="email" className="border p-2 rounded" value={newUser.email} onChange={e => setNewUser({ ...newUser, email: e.target.value })} required />
-                                <input placeholder={editingId ? "Contraseña (dejar en blanco para no cambiar)" : "Contraseña"} type="password" className="border p-2 rounded" value={newUser.password} onChange={e => setNewUser({ ...newUser, password: e.target.value })} required={!editingId} />
-                                <select
-                                    className="border p-2 rounded bg-white"
-                                    value={newUser.role}
-                                    onChange={e => setNewUser({ ...newUser, role: e.target.value as any })}
-                                >
-                                    <option value="student">Estudiante</option>
-                                    <option value="teacher">Profesor</option>
-                                    <option value="partner">Aliado</option>
-                                    <option value="admin">Administrador</option>
-                                </select>
-                            </div >
-                            <button type="submit" className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 rounded-lg mt-4">
-                                {editingId ? 'Guardar Cambios' : 'Confirmar Creación'}
-                            </button>
-                        </form >
-                    </div >
-                )}
-
-                {/* Success Message Global */}
-                {
-                    success && (
-                        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4 flex items-center justify-between" role="alert">
-                            <span className="block sm:inline">{success}</span>
-                            <button onClick={() => setSuccess(null)} className="font-bold text-xl px-2">&times;</button>
+                    </Card>
+                    <Card className="flex items-center gap-4 !bg-white/70 border-l-4 border-l-purple-500">
+                        <div className="p-3 bg-purple-100 rounded-full text-purple-600"><FileText size={24} /></div>
+                        <div>
+                            <p className="text-sm font-bold text-text-secondary uppercase">Evidencias</p>
+                            <p className="text-3xl font-black text-primary">{stats.evidence}</p>
                         </div>
-                    )
-                }
-                {/* Error Message Global (or from form) */}
-                {
-                    formError && (
-                        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4 flex items-center justify-between" role="alert">
-                            <span className="block sm:inline">{formError}</span>
-                            <button onClick={() => setFormError(null)} className="font-bold text-xl px-2">&times;</button>
+                    </Card>
+                    <Card className="flex items-center gap-4 !bg-white/70 border-l-4 border-l-green-500">
+                        <div className="p-3 bg-green-100 rounded-full text-green-600"><Activity size={24} /></div>
+                        <div>
+                            <p className="text-sm font-bold text-text-secondary uppercase">Impacto Total</p>
+                            <p className="text-3xl font-black text-primary">{stats.impact} pts</p>
                         </div>
-                    )
-                }
+                    </Card>
+                </div>
 
-                <div className="bg-surface rounded-xl shadow overflow-hidden border border-border/50">
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left">
-                            <thead className="bg-gray-50/50 text-text-secondary text-sm">
+                {/* Users Management */}
+                <section onClick={e => e.stopPropagation()}>
+                    <div className="flex justify-between items-center mb-6">
+                        <h2 className="text-2xl font-bold text-primary">Usuarios</h2>
+                        <Button
+                            onClick={() => {
+                                if (showUserForm) {
+                                    setShowUserForm(false)
+                                    setEditingId(null)
+                                    setNewUser({ names: '', last_name: '', cedula: '', phone: '', email: '', password: '', role: 'student' as any })
+                                } else {
+                                    setNewUser({ names: '', last_name: '', cedula: '', phone: '', email: '', password: '', role: 'student' as any })
+                                    setEditingId(null)
+                                    setShowUserForm(true)
+                                }
+                            }}
+                            size="sm"
+                        >
+                            <Plus size={18} /> {showUserForm ? 'Cerrar' : 'Nuevo Usuario'}
+                        </Button>
+                    </div>
+
+                    {showUserForm && (
+                        <Card className="mb-8 border-2 border-primary/10 p-6 md:p-8 animate-in slide-in-from-top-4 duration-300">
+                            <h3 className="font-bold text-lg mb-6 flex items-center gap-2 text-primary">
+                                {editingId ? <Edit2 size={20} /> : <Plus size={20} />}
+                                {editingId ? 'Editar Usuario' : 'Crear Nuevo Usuario'}
+                            </h3>
+                            <form onSubmit={handleCreateUser} className="grid md:grid-cols-2 gap-6">
+                                <div className="space-y-1">
+                                    <label className="text-xs font-bold text-text-secondary uppercase ml-1">Nombre Completo</label>
+                                    <input placeholder="Ej: Juan Pérez" value={newUser.names} onChange={e => setNewUser({ ...newUser, names: e.target.value })} className="w-full p-3 border border-gray-200 rounded-xl bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all outline-none" />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-xs font-bold text-text-secondary uppercase ml-1">Teléfono</label>
+                                    <input placeholder="Ej: 300 123 4567" value={newUser.phone} onChange={e => setNewUser({ ...newUser, phone: e.target.value })} className="w-full p-3 border border-gray-200 rounded-xl bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all outline-none" />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-xs font-bold text-text-secondary uppercase ml-1">Email</label>
+                                    <input placeholder="correo@ejemplo.com" type="email" value={newUser.email} onChange={e => setNewUser({ ...newUser, email: e.target.value })} className="w-full p-3 border border-gray-200 rounded-xl bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all outline-none" />
+                                </div>
+                                {!editingId && (
+                                    <div className="space-y-1">
+                                        <label className="text-xs font-bold text-text-secondary uppercase ml-1">Contraseña</label>
+                                        <input placeholder="••••••••" type="password" value={newUser.password} onChange={e => setNewUser({ ...newUser, password: e.target.value })} className="w-full p-3 border border-gray-200 rounded-xl bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all outline-none" />
+                                    </div>
+                                )}
+                                <div className="space-y-1">
+                                    <label className="text-xs font-bold text-text-secondary uppercase ml-1">Rol</label>
+                                    <div className="relative">
+                                        <select value={newUser.role} onChange={e => setNewUser({ ...newUser, role: e.target.value as any })} className="w-full p-3 border border-gray-200 rounded-xl bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all outline-none appearance-none cursor-pointer">
+                                            <option value="student">Estudiante</option>
+                                            <option value="teacher">Profesor</option>
+                                            <option value="partner">Aliado</option>
+                                            <option value="admin">Admin</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div className="md:col-span-2 flex justify-end mt-4">
+                                    <Button type="submit" className="!w-auto px-8 min-w-[200px]">
+                                        Guardar Usuario
+                                    </Button>
+                                </div>
+                            </form>
+                            {formError && <p className="text-red-500 mt-4 text-sm font-medium bg-red-50 p-3 rounded-lg border border-red-100">{formError}</p>}
+                            {success && <p className="text-green-600 mt-4 text-sm font-medium bg-green-50 p-3 rounded-lg border border-green-100">{success}</p>}
+                        </Card>
+                    )}
+
+                    <div className="bg-white/60 backdrop-blur-md rounded-xl shadow-sm border border-white/50 overflow-visible">
+                        <table className="w-full text-left border-collapse">
+                            <thead className="bg-primary/5 text-primary font-bold text-xs uppercase">
                                 <tr>
-                                    <th className="w-10 p-4">
-                                        <div className="flex items-center justify-center">
-                                            <input type="checkbox" className="rounded border-gray-300 text-primary focus:ring-primary h-4 w-4" />
-                                        </div>
-                                    </th>
-                                    <th className="p-4 font-medium">Nombre Completo</th>
-                                    <th className="p-4 font-medium">Rol</th>
-                                    <th className="p-4 font-medium">Cédula</th>
-                                    <th className="p-4 font-medium">Teléfono</th>
-                                    <th className="p-4 font-medium">Correo (ID)</th>
-                                    <th className="p-4 font-medium w-10"></th>
+                                    <th className="p-4 w-10">#</th>
+                                    <th className="p-4">Usuario</th>
+                                    <th className="p-4 hidden md:table-cell">Contacto</th>
+                                    <th className="p-4 hidden md:table-cell">Rol</th>
+                                    <th className="p-4 text-right">Acciones</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-border/50">
-                                {users.map(u => (
-                                    <tr key={u.id} className="hover:bg-gray-50/50 transition-colors group">
-                                        <td className="p-4">
-                                            <div className="flex items-center justify-center">
+                            <tbody className="divide-y divide-gray-100/50">
+                                {users.map(user => {
+                                    const isSelected = selectedUsers.has(user.id)
+                                    return (
+                                        <tr key={user.id} className={`transition-colors ${isSelected ? 'bg-primary/5' : 'hover:bg-white/40'}`}>
+                                            <td className="p-4">
                                                 <input
                                                     type="checkbox"
-                                                    className="rounded border-gray-300 text-primary focus:ring-primary h-4 w-4 cursor-pointer"
-                                                    checked={selectedUsers.has(u.id)}
-                                                    onChange={() => toggleSelection(u.id)}
+                                                    checked={isSelected}
+                                                    onChange={() => toggleSelection(user.id)}
+                                                    className="w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary cursor-pointer"
                                                 />
-                                            </div>
-                                        </td>
-                                        <td className="p-4 font-medium text-text-main">
-                                            {u.full_name} {u.last_name}
-                                        </td>
-                                        <td className="p-4">
-                                            <span className={`px-2 py-1 rounded-md text-xs font-bold border ${u.role === 'student' ? 'bg-blue-50 text-blue-700 border-blue-200' :
-                                                u.role === 'teacher' ? 'bg-purple-50 text-purple-700 border-purple-200' :
-                                                    u.role === 'admin' ? 'bg-red-50 text-red-700 border-red-200' :
-                                                        'bg-green-50 text-green-700 border-green-200'
-                                                }`}>
-                                                {u.role?.toUpperCase()}
-                                            </span>
-                                        </td>
-                                        <td className="p-4 text-sm text-text-secondary">{u.cedula || '-'}</td>
-                                        <td className="p-4 text-sm text-text-secondary">{u.phone || '-'}</td>
-                                        <td className="p-4 text-sm text-text-secondary">
-                                            <span className="font-medium text-text-main block">{(u as any).email || 'Sin correo'}</span>
-                                            <span className="text-xs opacity-50 font-mono">{u.id.substring(0, 8)}...</span>
-                                        </td>
-                                        <td className="p-4 relative">
-                                            <button
-                                                onClick={() => setActionMenuOpen(actionMenuOpen === u.id ? null : u.id)}
-                                                disabled={!selectedUsers.has(u.id)}
-                                                className={`p-2 rounded-full transition-all duration-200 ${selectedUsers.has(u.id)
-                                                    ? 'hover:bg-gray-200 text-gray-500 cursor-pointer'
-                                                    : 'text-gray-300 cursor-not-allowed opacity-50'
-                                                    }`}
-                                            >
-                                                <MoreVertical className="w-4 h-4" />
-                                            </button>
+                                            </td>
+                                            <td className="p-4">
+                                                <div className="font-bold text-text-main">{user.full_name}</div>
+                                                <div className="text-xs text-text-secondary">{(user as any).email}</div>
+                                            </td>
+                                            <td className="p-4 hidden md:table-cell text-sm text-text-secondary">
+                                                {(user as any).phone || 'Sin teléfono'}
+                                            </td>
+                                            <td className="p-4 hidden md:table-cell">
+                                                <Badge variant={user.role === 'admin' ? 'purple' : user.role === 'teacher' ? 'green' : user.role === 'partner' ? 'gold' : 'gray'}>
+                                                    {user.role}
+                                                </Badge>
+                                            </td>
+                                            <td className="p-4 text-right relative">
+                                                <button
+                                                    disabled={!isSelected}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation()
+                                                        setActiveMenu(activeMenu === user.id ? null : user.id)
+                                                    }}
+                                                    className={`p-2 rounded-full transition-colors ${isSelected
+                                                        ? 'text-primary hover:bg-primary/10 cursor-pointer'
+                                                        : 'text-gray-300 cursor-not-allowed'
+                                                        }`}
+                                                >
+                                                    <MoreVertical size={20} />
+                                                </button>
 
-                                            {/* Action Menu Popover */}
-                                            {actionMenuOpen === u.id && selectedUsers.has(u.id) && (
-                                                <div className="absolute right-8 top-8 z-10 w-32 bg-white rounded-lg shadow-lg border border-border py-1 animate-in fade-in zoom-in-95">
-                                                    <button
-                                                        onClick={() => startEdit(u)}
-                                                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
-                                                    >
-                                                        <Edit2 className="w-3 h-3" /> Editar
-                                                    </button>
-                                                    <button
-                                                        onClick={() => resendEmail((u as any).email)}
-                                                        className="w-full text-left px-4 py-2 text-sm text-blue-600 hover:bg-blue-50 flex items-center gap-2"
-                                                    >
-                                                        <Mail className="w-3 h-3" /> Reenviar
-                                                    </button>
-                                                    <button
-                                                        onClick={() => requestDelete(u.id)}
-                                                        className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
-                                                    >
-                                                        <Trash2 className="w-3 h-3" /> Borrar
-                                                    </button>
-                                                </div>
-                                            )}
-                                        </td>
-                                    </tr>
-                                ))}
+                                                {/* Context Menu */}
+                                                {activeMenu === user.id && isSelected && (
+                                                    <div className="absolute right-8 top-10 w-48 bg-white rounded-xl shadow-xl border border-gray-100 z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                                                        <button
+                                                            onClick={() => { startEdit(user); setActiveMenu(null) }}
+                                                            className="w-full text-left px-4 py-3 text-sm hover:bg-gray-50 flex items-center gap-2 text-text-main"
+                                                        >
+                                                            <Edit2 size={16} /> Editar
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleResendInvite((user as any).email)}
+                                                            className="w-full text-left px-4 py-3 text-sm hover:bg-gray-50 flex items-center gap-2 text-text-main"
+                                                        >
+                                                            <Mail size={16} /> Reenviar Correo
+                                                        </button>
+                                                        <div className="h-px bg-gray-100 my-0"></div>
+                                                        <button
+                                                            onClick={() => { setUserToDelete(user.id); setShowDeleteModal(true); setActiveMenu(null) }}
+                                                            className="w-full text-left px-4 py-3 text-sm hover:bg-red-50 flex items-center gap-2 text-red-600"
+                                                        >
+                                                            <Trash2 size={16} /> Eliminar
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </td>
+                                        </tr>
+                                    )
+                                })}
                             </tbody>
                         </table>
                     </div>
-                </div>
-            </section >
+                </section>
 
-            {/* Cohorts Section - Minimized or Secondary */}
-            < section >
-                <div className="flex justify-between items-center mb-4 pt-8 border-t">
-                    <h2 className="text-xl font-bold text-secondary">Cohortes</h2>
-                    <button onClick={createCohort} className="text-sm bg-gray-100 hover:bg-gray-200 text-text-main px-3 py-1 rounded">
-                        + Nueva
-                    </button>
-                </div>
-                <div className="grid gap-4 md:grid-cols-3 opacity-75">
-                    {cohorts.map(c => (
-                        <div key={c.id} className="p-3 bg-gray-50 rounded border text-sm">
-                            <b>{c.name}</b> ({c.type})
-                        </div>
-                    ))}
-                </div>
-            </section >
-
-            {/* Modals */}
-            < ConfirmModal
-                isOpen={showDeleteModal}
-                title="¿Eliminar Usuario?"
-                message="Esta acción no se puede deshacer. El usuario perderá acceso y sus datos serán borrados permanentemente."
-                onConfirm={confirmDelete}
-                onCancel={() => setShowDeleteModal(false)}
-                isLoading={isDeleting}
-            />
-        </div >
+                <ConfirmModal
+                    isOpen={showDeleteModal}
+                    title="Eliminar Usuario"
+                    message="¿Estás seguro?"
+                    onConfirm={confirmDelete}
+                    onCancel={() => setShowDeleteModal(false)}
+                />
+            </div>
+        </Layout>
     )
+
+    function startEdit(user: Profile) {
+        setNewUser({
+            names: user.full_name || '', last_name: '', cedula: '', phone: (user as any).phone || '', email: (user as any).email || '', password: '', role: user.role || 'student'
+        })
+        setEditingId(user.id); setShowUserForm(true)
+    }
 }

@@ -1,9 +1,15 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   body {
-    @apply bg-background text-text-main font-sans antialiased;
+    font-family: 'Roboto', sans-serif;
+    @apply text-text-main bg-background min-h-screen relative overflow-x-hidden;
+    /* Organic Background Gradient */
+    background: radial-gradient(circle at 10% 20%, rgba(66, 167, 153, 0.1) 0%, rgba(244, 244, 249, 1) 40%),
+      radial-gradient(circle at 90% 80%, rgba(74, 37, 116, 0.05) 0%, rgba(244, 244, 249, 1) 40%);
   }
 }

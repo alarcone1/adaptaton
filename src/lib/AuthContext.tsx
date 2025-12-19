@@ -10,9 +10,18 @@ interface AuthContextType {
     user: User | null
     role: UserRole
     loading: boolean
+    signInWithMagicLink: (email: string) => Promise<{ data: { user: User | null; session: Session | null }; error: any }>
+    signOut: () => Promise<{ error: any }>
 }
 
-const AuthContext = createContext<AuthContextType>({ session: null, user: null, role: null, loading: true })
+const AuthContext = createContext<AuthContextType>({
+    session: null,
+    user: null,
+    role: null,
+    loading: true,
+    signInWithMagicLink: async () => ({ data: { user: null, session: null }, error: null }),
+    signOut: async () => ({ error: null })
+})
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [session, setSession] = useState<Session | null>(null)
@@ -63,8 +72,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
     }
 
+    const signInWithMagicLink = async (email: string) => {
+        return supabase.auth.signInWithOtp({ email })
+    }
+
+    const signOut = async () => {
+        return supabase.auth.signOut()
+    }
+
     return (
-        <AuthContext.Provider value={{ session, user, role, loading }}>
+        <AuthContext.Provider value={{ session, user, role, loading, signInWithMagicLink, signOut }}>
             {children}
         </AuthContext.Provider>
     )

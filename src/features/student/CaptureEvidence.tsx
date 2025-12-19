@@ -1,204 +1,275 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { addToQueue } from '../../services/offlineStorage'
-import { useAuth } from '../../lib/AuthContext'
-import { useOfflineSync } from '../../hooks/useOfflineSync'
+import { set, values } from 'idb-keyval'
 import { supabase } from '../../lib/supabase'
+import { useAuth } from '../../lib/AuthContext'
+
+import { Card } from '../../components/ui/Card'
+import { Button } from '../../components/ui/Button'
+import { Camera, MapPin, Loader2, Wifi, WifiOff, UploadCloud } from 'lucide-react'
+import type { Database } from '../../lib/database.types'
+
+type Challenge = Database['public']['Tables']['challenges']['Row']
 
 export const CaptureEvidence = () => {
-    const { user } = useAuth()
+    const { session } = useAuth()
     const navigate = useNavigate()
-    const { isOnline } = useOfflineSync()
-    const [challengeId, setChallengeId] = useState('')
-    const [challenges, setChallenges] = useState<{ id: string, title: string }[]>([])
-    const [impactValue, setImpactValue] = useState('')
+    const [challenges, setChallenges] = useState<Challenge[]>([])
+
+    // Form State
     const [description, setDescription] = useState('')
+    const [selectedChallenge, setSelectedChallenge] = useState<string>('')
+    const [imageFile, setImageFile] = useState<File | null>(null)
+    const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+    const [location, setLocation] = useState<{ lat: number, lng: number } | null>(null)
+
+    // UI State
+    const [loading, setLoading] = useState(false)
     const [statusMsg, setStatusMsg] = useState('')
-
-    // Media
-    const fileInputRef = useRef<HTMLInputElement>(null)
-    const [preview, setPreview] = useState<string | null>(null)
-
-    const [fileToUpload, setFileToUpload] = useState<File | null>(null)
-    const [isSubmitting, setIsSubmitting] = useState(false)
+    const [isOnline, setIsOnline] = useState(navigator.onLine)
+    const [pendingUploads, setPendingUploads] = useState(0)
 
     useEffect(() => {
-        // Fetch challenges for select
-        supabase.from('challenges').select('id, title').then(({ data }) => {
-            if (data) setChallenges(data)
-        })
+        fetchChallenges()
+
+        // Online/Offline listeners
+        window.addEventListener('online', () => setIsOnline(true))
+        window.addEventListener('offline', () => setIsOnline(false))
+
+        checkPendingUploads()
+
+        return () => {
+            window.removeEventListener('online', () => setIsOnline(true))
+            window.removeEventListener('offline', () => setIsOnline(false))
+        }
     }, [])
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0]
-        if (file) {
-            setFileToUpload(file)
-            const reader = new FileReader()
-            reader.onloadend = () => {
-                setPreview(reader.result as string)
-            }
-            reader.readAsDataURL(file)
+    const fetchChallenges = async () => {
+        const { data } = await supabase.from('challenges').select('*')
+        if (data) setChallenges(data)
+    }
+
+    const checkPendingUploads = async () => {
+        const entries = await values()
+        // Filter for evidence entries (simple check)
+        const pending = entries.filter((e: any) => e.type === 'evidence_submission').length
+        setPendingUploads(pending)
+    }
+
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            const file = e.target.files[0]
+            setImageFile(file)
+            setPreviewUrl(URL.createObjectURL(file))
+        }
+    }
+
+    const getLocation = () => {
+        setLoading(true)
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    setLocation({
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude
+                    })
+                    setLoading(false)
+                },
+                (error) => {
+                    console.error(error)
+                    alert('No pudimos obtener tu ubicación. Asegúrate de dar permisos.')
+                    setLoading(false)
+                }
+            )
+        } else {
+            alert('Geolocalización no soportada en este navegador.')
+            setLoading(false)
         }
     }
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
-        if (!user || !challengeId) return
+        if (!selectedChallenge || !description) {
+            alert('Por favor completa los campos requeridos.')
+            return
+        }
 
-        setIsSubmitting(true)
+        setLoading(true)
+        setStatusMsg('Procesando...')
 
-        // Get Location
-        navigator.geolocation.getCurrentPosition(
-            async (pos) => {
-                const evidenceData = {
-                    challenge_id: challengeId,
-                    user_id: user.id,
-                    description,
-                    impact_data: { value: parseInt(impactValue) },
-                    gps_coords: { lat: pos.coords.latitude, long: pos.coords.longitude },
-                    status: 'draft' as const,
-                    localId: crypto.randomUUID(),
-                    timestamp: Date.now()
-                }
-
-                try {
-                    if (isOnline) {
-                        setStatusMsg('Subiendo foto...')
-                        let mediaUrl = null
-
-                        if (fileToUpload) {
-                            const fileExt = fileToUpload.name.split('.').pop()
-                            const fileName = `${user.id}/${Date.now()}.${fileExt}`
-
-                            const { error: uploadError } = await supabase.storage
-                                .from('evidence-media')
-                                .upload(fileName, fileToUpload)
-
-                            if (uploadError) throw uploadError
-
-                            const { data: { publicUrl } } = supabase.storage
-                                .from('evidence-media')
-                                .getPublicUrl(fileName)
-
-                            mediaUrl = publicUrl
-                        }
-
-                        setStatusMsg('Guardando evidencia...')
-                        const { error } = await supabase.from('evidences').insert({
-                            ...evidenceData,
-                            status: 'submitted',
-                            media_url: mediaUrl,
-                            // Type casting for strict DB types vs local convenience
-                            description: evidenceData.description,
-                            impact_data: evidenceData.impact_data as any,
-                            gps_coords: evidenceData.gps_coords as any,
-                        })
-
-                        if (error) throw error
-
-                        alert('¡Evidencia enviada con éxito!')
-                        navigate('/student')
-
-                    } else {
-                        // Save to Queue
-                        setStatusMsg('Guardando en dispositivo...')
-
-                        await addToQueue({
-                            ...evidenceData,
-                            // @ts-ignore
-                            gps_coords: evidenceData.gps_coords,
-                            impact_data: evidenceData.impact_data as any,
-                            status: 'draft',
-                            mediaBlob: fileToUpload || undefined
-                        })
-
-                        alert('Guardado en dispositivo. Se subirá cuando tengas conexión.')
-                        navigate('/student')
-                    }
-                } catch (error: any) {
-                    console.error('Error submitting:', error)
-                    alert('Error: ' + error.message)
-                    setStatusMsg('')
-                } finally {
-                    setIsSubmitting(false)
-                }
-            },
-            (err) => {
-                setIsSubmitting(false)
-                alert('Necesitamos tu ubicación para validar el impacto. ' + err.message)
+        try {
+            const evidenceData = {
+                id: crypto.randomUUID(),
+                user_id: session?.user.id,
+                challenge_id: selectedChallenge,
+                description,
+                location,
+                timestamp: new Date().toISOString(),
+                status: 'submitted',
+                type: 'evidence_submission', // Tag for IDB
+                imageBlob: imageFile // Store file for offline
             }
-        )
+
+            if (isOnline) {
+                // 1. Upload Image
+                let mediaUrl = null
+                if (imageFile) {
+                    const fileName = `${session?.user.id}/${Date.now()}_${imageFile.name}`
+                    const { error: uploadError } = await supabase.storage
+                        .from('evidence-media')
+                        .upload(fileName, imageFile)
+
+                    if (uploadError) throw uploadError
+
+                    // Get Public URL
+                    const { data: { publicUrl } } = supabase.storage.from('evidence-media').getPublicUrl(fileName)
+                    mediaUrl = publicUrl
+                }
+
+                // 2. Insert Record
+                const { error: insertError } = await supabase.from('evidences').insert({
+                    user_id: session!.user.id,
+                    challenge_id: selectedChallenge,
+                    description,
+                    media_url: mediaUrl,
+                    location: location as any,
+                    impact_data: { value: 10, source: 'manual_verification' } // This would be dynamic
+                })
+
+                if (insertError) throw insertError
+                setStatusMsg('¡Evidencia enviada exitosamente!')
+                setTimeout(() => navigate('/student'), 2000)
+
+            } else {
+                // SAVE OFFLINE
+                await set(`evidence-${Date.now()}`, evidenceData)
+                setStatusMsg('Guardado localmente. Se subirá cuando tengas internet.')
+                checkPendingUploads()
+                setTimeout(() => navigate('/student'), 2000)
+            }
+
+        } catch (error: any) {
+            console.error(error)
+            setStatusMsg('Error: ' + error.message)
+        } finally {
+            setLoading(false)
+        }
     }
 
     return (
-        <div className="space-y-6">
-            <h1 className="text-2xl font-bold text-primary">Capturar Evidencia</h1>
-
-            <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                    <label className="block text-sm font-medium text-text-secondary mb-1">Reto</label>
-                    <select
-                        value={challengeId}
-                        onChange={(e) => setChallengeId(e.target.value)}
-                        className="w-full p-3 bg-surface border border-gray-200 rounded-xl"
-                        required
-                    >
-                        <option value="">Selecciona un reto...</option>
-                        {challenges.map(c => <option key={c.id} value={c.id}>{c.title}</option>)}
-                    </select>
+        <div className="p-4 md:p-6 max-w-2xl mx-auto pb-24 md:pb-6">
+            <div className="flex items-center gap-2 mb-6">
+                <div className="p-2 bg-primary/10 rounded-lg text-primary">
+                    <Camera size={24} />
                 </div>
-
                 <div>
-                    <label className="block text-sm font-medium text-text-secondary mb-1">Foto del Impacto</label>
-                    <input
-                        type="file"
-                        accept="image/*"
-                        capture="environment"
-                        ref={fileInputRef}
-                        onChange={handleFileChange}
-                        className="block w-full text-sm text-text-secondary file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-secondary/10 file:text-secondary hover:file:bg-secondary/20"
-                    />
-                    {preview && (
-                        <div className="mt-2 relative">
-                            <img src={preview} alt="Preview" className="w-full h-48 object-cover rounded-xl" />
-                        </div>
+                    <h1 className="text-2xl font-bold text-primary">Capturar Evidencia</h1>
+                    <div className="flex items-center gap-2 text-xs font-medium">
+                        <span className={`flex items-center gap-1 ${isOnline ? 'text-green-600' : 'text-orange-500'}`}>
+                            {isOnline ? <Wifi size={12} /> : <WifiOff size={12} />}
+                            {isOnline ? 'Online' : 'Modo Offline Activado'}
+                        </span>
+                        {pendingUploads > 0 && (
+                            <span className="text-orange-500 flex items-center gap-1">
+                                • <UploadCloud size={12} /> {pendingUploads} pendientes
+                            </span>
+                        )}
+                    </div>
+                </div>
+            </div>
+
+            <Card className="p-0 overflow-hidden">
+                {/* Image Preview / Camera Input */}
+                <div className="bg-gray-100 border-b border-gray-200 min-h-[250px] relative flex flex-col items-center justify-center group">
+                    {previewUrl ? (
+                        <>
+                            <img src={previewUrl} alt="Preview" className="w-full h-[300px] object-cover" />
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                <label className="cursor-pointer bg-white/20 backdrop-blur-md px-4 py-2 rounded-full text-white font-bold border border-white/50 hover:bg-white/30 transition-all">
+                                    Cambiar Foto
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        capture="environment"
+                                        className="hidden"
+                                        onChange={handleImageChange}
+                                    />
+                                </label>
+                            </div>
+                        </>
+                    ) : (
+                        <label className="cursor-pointer flex flex-col items-center gap-3 p-8 transition-transform hover:scale-105 active:scale-95">
+                            <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-md">
+                                <Camera size={32} className="text-primary" />
+                            </div>
+                            <span className="text-text-secondary font-medium">Tocar para tomar foto</span>
+                            <input
+                                type="file"
+                                accept="image/*"
+                                capture="environment"
+                                className="hidden"
+                                onChange={handleImageChange}
+                            />
+                        </label>
                     )}
                 </div>
 
-                <div>
-                    <label className="block text-sm font-medium text-text-secondary mb-1">Impacto (Cantidad)</label>
-                    <input
-                        type="number"
-                        value={impactValue}
-                        onChange={(e) => setImpactValue(e.target.value)}
-                        placeholder="Ej: 10 (Kilos, Árboles, etc)"
-                        className="w-full p-3 bg-surface border border-gray-200 rounded-xl text-lg font-bold text-primary"
-                        required
-                    />
-                </div>
+                <form onSubmit={handleSubmit} className="p-6 space-y-6">
+                    {/* Location Badge */}
+                    <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-lg border border-blue-100 text-blue-800 text-sm">
+                        <MapPin size={16} className="shrink-0" />
+                        {location ? (
+                            <span>Ubicación detectada: {location.lat.toFixed(4)}, {location.lng.toFixed(4)}</span>
+                        ) : (
+                            <button
+                                type="button"
+                                onClick={getLocation}
+                                className="text-blue-800 font-medium hover:underline"
+                            >
+                                Detectar ubicación GPS
+                            </button>
+                        )}
+                    </div>
 
-                <div>
-                    <label className="block text-sm font-medium text-text-secondary mb-1">Historia</label>
-                    <textarea
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                        placeholder="Cuéntanos cómo fue la experiencia..."
-                        className="w-full p-3 bg-surface border border-gray-200 rounded-xl h-24"
-                        required
-                    />
-                </div>
+                    {/* Form Fields */}
+                    <div className="space-y-4">
+                        <div>
+                            <label className="block text-sm font-bold text-text-secondary mb-2">Selecciona el Reto</label>
+                            <select
+                                value={selectedChallenge}
+                                onChange={(e) => setSelectedChallenge(e.target.value)}
+                                className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:ring-2 focus:ring-primary outline-none transition-all"
+                            >
+                                <option value="">-- Seleccionar Misión --</option>
+                                {challenges.map(c => (
+                                    <option key={c.id} value={c.id}>{c.title} ({c.points} pts)</option>
+                                ))}
+                            </select>
+                        </div>
 
-                <div className="pt-4">
-                    <button
-                        type="submit"
-                        disabled={isSubmitting}
-                        className="w-full bg-secondary text-white font-bold py-4 rounded-xl shadow-lg hover:bg-opacity-90 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                        <div>
+                            <label className="block text-sm font-bold text-text-secondary mb-2">Descripción</label>
+                            <textarea
+                                value={description}
+                                onChange={(e) => setDescription(e.target.value)}
+                                className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:ring-2 focus:ring-primary outline-none transition-all h-24 resize-none"
+                                placeholder="Describe qué lograste con esta evidencia..."
+                            />
+                        </div>
+                    </div>
+
+                    <Button
+                        fullWidth
+                        size="lg"
+                        onClick={handleSubmit}
+                        disabled={loading || !imageFile || !selectedChallenge}
+                        className={statusMsg.includes('Guardado localmente') ? '!bg-orange-500' : ''}
                     >
-                        {isSubmitting ? 'Procesando...' : (isOnline ? 'Enviar Evidencia' : 'Guardar (Offline)')}
-                    </button>
-                    {statusMsg && <p className="text-center text-sm text-primary mt-2">{statusMsg}</p>}
-                </div>
-            </form>
+                        {loading ? <Loader2 className="animate-spin" /> : statusMsg || 'Enviar Evidencia'}
+                    </Button>
+                    {statusMsg && <p className="text-center text-sm font-bold mt-3 text-primary animate-pulse">{statusMsg}</p>}
+                </form>
+            </Card>
         </div>
     )
 }

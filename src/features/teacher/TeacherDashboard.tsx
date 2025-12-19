@@ -1,17 +1,23 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabase'
 import type { Database } from '../../lib/database.types'
-import { Check, Edit2, Star, X } from 'lucide-react'
-import { LogoutButton } from '../../components/LogoutButton'
+import { Layout } from '../../components/ui/Layout'
+import { Card } from '../../components/ui/Card'
+import { Button } from '../../components/ui/Button'
+import { Badge } from '../../components/ui/Badge'
+import { PageHeader } from '../../components/ui/PageHeader'
+import { CheckCircle, XCircle, Clock, FileText, Filter } from 'lucide-react'
 
-type Evidence = Database['public']['Tables']['evidences']['Row']
+type Evidence = Database['public']['Tables']['evidences']['Row'] & {
+    profiles: { full_name: string | null } | null
+    challenges: { title: string | null } | null
+}
 
 export const TeacherDashboard = () => {
     const [evidences, setEvidences] = useState<Evidence[]>([])
     const [loading, setLoading] = useState(true)
-    const [editingId, setEditingId] = useState<string | null>(null)
-    const [editValue, setEditValue] = useState('')
     const [activeTab, setActiveTab] = useState<'pending' | 'history'>('pending')
+    const [filterText, setFilterText] = useState('')
 
     useEffect(() => {
         fetchEvidences()
@@ -20,145 +26,167 @@ export const TeacherDashboard = () => {
     const fetchEvidences = async () => {
         const { data } = await supabase
             .from('evidences')
-            .select('*')
-            .order('created_at', { ascending: false })
+            .select('*, profiles(full_name), challenges(title)')
+            .order('timestamp', { ascending: false })
 
-        if (data) setEvidences(data)
+        if (data) setEvidences(data as any)
         setLoading(false)
     }
 
-    const pendingCount = evidences.filter(e => e.status === 'submitted').length
-    const historyCount = evidences.filter(e => e.status === 'validated' || e.status === 'rejected').length
+    const validateEvidence = async (id: string, isValid: boolean) => {
+        const { error } = await supabase
+            .from('evidences')
+            .update({ status: isValid ? 'validated' : 'rejected' })
+            .eq('id', id)
 
-    const filteredEvidences = evidences.filter(e => {
-        if (activeTab === 'pending') return e.status === 'submitted'
-        return e.status === 'validated' || e.status === 'rejected'
-    })
-
-    const handleValidate = async (id: string) => {
-        await supabase.from('evidences').update({ status: 'validated' }).eq('id', id)
-        fetchEvidences()
+        if (!error) {
+            fetchEvidences()
+        } else {
+            alert('Error actualizando estado')
+        }
     }
 
-    const handleReject = async (id: string) => {
-        await supabase.from('evidences').update({ status: 'rejected' }).eq('id', id)
-        fetchEvidences()
+    const toggleHighlight = async (id: string, current: boolean) => {
+        const { error } = await supabase
+            .from('evidences')
+            .update({ is_highlighted: !current })
+            .eq('id', id)
+
+        if (!error) fetchEvidences()
     }
 
-    const handleHighlight = async (id: string, current: boolean) => {
-        await supabase.from('evidences').update({ is_highlighted: !current }).eq('id', id)
-        fetchEvidences()
-    }
+    // Filter Logic
+    const pendingEvidences = evidences.filter(e => e.status === 'submitted')
+    const historyEvidences = evidences.filter(e => e.status === 'validated' || e.status === 'rejected')
 
-    const startEdit = (ev: Evidence) => {
-        setEditingId(ev.id)
-        setEditValue((ev.impact_data as any)?.value || '')
-    }
+    const filteredEvidences = (activeTab === 'pending' ? pendingEvidences : historyEvidences).filter(e =>
+        e.profiles?.full_name?.toLowerCase().includes(filterText.toLowerCase()) ||
+        e.challenges?.title?.toLowerCase().includes(filterText.toLowerCase())
+    )
 
-    const saveEdit = async (id: string) => {
-        await supabase.from('evidences').update({
-            impact_data: { value: parseInt(editValue) }
-        }).eq('id', id)
-        setEditingId(null)
-        fetchEvidences()
-    }
+    const pendingCount = pendingEvidences.length
 
     return (
-        <div className="p-4 md:p-8 bg-background min-h-screen">
-            <div className="flex justify-between items-center mb-6">
-                <div className="flex items-center gap-4">
-                    <h1 className="text-3xl font-bold text-primary">Sala de Validación</h1>
-                    <span className="bg-purple-100 text-purple-800 text-xs font-bold px-2.5 py-0.5 rounded border border-purple-200">Rol: Profesor</span>
-                </div>
-                <LogoutButton />
-            </div>
+        <Layout>
+            <div className="p-4 md:p-8 min-h-screen">
+                <div className="max-w-7xl mx-auto space-y-6">
+                    <PageHeader title="Sala de Validación" subtitle="Revisa y valida el impacto de los estudiantes." role="Profesor" roleColor="purple" />
 
-            {/* Tabs */}
-            <div className="flex space-x-4 mb-6 border-b border-gray-200">
-                <button
-                    onClick={() => setActiveTab('pending')}
-                    className={`pb-2 px-4 font-medium transition-colors border-b-2 ${activeTab === 'pending'
-                        ? 'border-primary text-primary'
-                        : 'border-transparent text-gray-500 hover:text-gray-700'
-                        }`}
-                >
-                    Pendientes
-                    <span className="ml-2 bg-red-100 text-red-600 px-2 py-0.5 rounded-full text-xs">{pendingCount}</span>
-                </button>
-                <button
-                    onClick={() => setActiveTab('history')}
-                    className={`pb-2 px-4 font-medium transition-colors border-b-2 ${activeTab === 'history'
-                        ? 'border-primary text-primary'
-                        : 'border-transparent text-gray-500 hover:text-gray-700'
-                        }`}
-                >
-                    Historial
-                    <span className="ml-2 bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full text-xs">{historyCount}</span>
-                </button>
-            </div>
-
-            {loading ? <p>Cargando...</p> : (
-                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                    {filteredEvidences.map(ev => (
-                        <div key={ev.id} className="bg-surface rounded-xl shadow-md p-4 flex flex-col gap-3 relative border border-gray-100 animate-in fade-in zoom-in-95 duration-300">
-                            {/* Badge */}
-                            <div className="absolute top-4 right-4 text-xs font-bold uppercase px-2 py-1 rounded bg-gray-100 text-gray-500">
-                                {ev.status}
-                            </div>
-
-                            {ev.media_url && <img src={ev.media_url} className="w-full h-48 object-cover rounded-lg bg-gray-200" />}
-
-                            <p className="text-text-main mt-2">{ev.description}</p>
-
-                            {/* Impact Data */}
-                            <div className="flex items-center gap-2 bg-purple-50 p-2 rounded-lg">
-                                {editingId === ev.id ? (
-                                    <div className="flex gap-2">
-                                        <input
-                                            type="number"
-                                            className="w-20 p-1 border rounded"
-                                            value={editValue}
-                                            onChange={e => setEditValue(e.target.value)}
-                                        />
-                                        <button onClick={() => saveEdit(ev.id)} className="text-green-600"><Check /></button>
-                                    </div>
-                                ) : (
-                                    <>
-                                        <span className="font-bold text-primary">Impacto: {(ev.impact_data as any)?.value}</span>
-                                        <button onClick={() => startEdit(ev)} className="text-gray-400 hover:text-primary"><Edit2 size={16} /></button>
-                                    </>
-                                )}
-                            </div>
-
-                            {/* Actions */}
-                            <div className="mt-auto flex justify-between items-center pt-4 border-t border-gray-100">
-                                <div className="flex gap-2">
-                                    {ev.status === 'submitted' && (
-                                        <>
-                                            <button onClick={() => handleValidate(ev.id)} className="p-2 rounded-full bg-green-100 text-green-700 hover:bg-green-200" title="Validar">
-                                                <Check size={20} />
-                                            </button>
-                                            <button onClick={() => handleReject(ev.id)} className="p-2 rounded-full bg-red-100 text-red-700 hover:bg-red-200" title="Rechazar">
-                                                <X size={20} />
-                                            </button>
-                                        </>
-                                    )}
-                                </div>
-
-                                {ev.status === 'validated' && (
-                                    <button
-                                        onClick={() => handleHighlight(ev.id, ev.is_highlighted || false)}
-                                        className={`p-2 rounded-full transition-colors ${ev.is_highlighted ? 'bg-accent-gold text-white shadow-lg' : 'bg-gray-100 text-gray-400'}`}
-                                        title="Destacar para Gremios"
-                                    >
-                                        <Star size={20} fill={ev.is_highlighted ? 'currentColor' : 'none'} />
-                                    </button>
-                                )}
-                            </div>
+                    {/* Controls & Tabs */}
+                    <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-white/40 p-2 rounded-2xl border border-white/50 backdrop-blur-sm">
+                        <div className="flex bg-white/50 rounded-xl p-1 shadow-inner w-full md:w-auto">
+                            <button
+                                onClick={() => setActiveTab('pending')}
+                                className={`px-6 py-2 rounded-lg font-bold text-sm transition-all flex items-center gap-2 flex-1 md:flex-none justify-center ${activeTab === 'pending' ? 'bg-white text-primary shadow-sm' : 'text-text-secondary hover:text-primary'}`}
+                            >
+                                Pendientes
+                                {pendingCount > 0 && <span className="bg-accent-orange text-white text-[10px] px-1.5 py-0.5 rounded-full">{pendingCount}</span>}
+                            </button>
+                            <button
+                                onClick={() => setActiveTab('history')}
+                                className={`px-6 py-2 rounded-lg font-bold text-sm transition-all flex-1 md:flex-none justify-center ${activeTab === 'history' ? 'bg-white text-primary shadow-sm' : 'text-text-secondary hover:text-primary'}`}
+                            >
+                                Historial
+                            </button>
                         </div>
-                    ))}
+
+                        <div className="relative w-full md:w-64">
+                            <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                            <input
+                                type="text"
+                                placeholder="Filtrar por nombre..."
+                                value={filterText}
+                                onChange={e => setFilterText(e.target.value)}
+                                className="w-full pl-9 pr-4 py-2 rounded-xl bg-white/60 border-none focus:ring-2 focus:ring-primary/50 text-sm outline-none"
+                            />
+                        </div>
+                    </div>
+
+                    {loading ? <div className="grid grid-cols-1 md:grid-cols-3 gap-6">{[1, 2, 3].map(i => <div key={i} className="h-64 bg-white/40 animate-pulse rounded-xl" />)}</div> : (
+                        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                            {filteredEvidences.map(evidence => (
+                                <Card key={evidence.id} className="flex flex-col h-full border-t-4 border-t-primary/20">
+                                    {/* Header: User & Challenge */}
+                                    <div className="mb-4">
+                                        <div className="flex justify-between items-start mb-1">
+                                            <h3 className="font-bold text-lg text-primary">{evidence.profiles?.full_name || 'Estudiante'}</h3>
+                                            <Badge variant={evidence.status === 'validated' ? 'green' : evidence.status === 'rejected' ? 'orange' : 'purple'}>
+                                                {evidence.status === 'validated' ? 'Aprobado' : evidence.status === 'rejected' ? 'Rechazado' : 'Pendiente'}
+                                            </Badge>
+                                        </div>
+                                        <p className="text-xs font-bold text-secondary uppercase tracking-wide truncate">{evidence.challenges?.title}</p>
+                                        <div className="flex items-center gap-1 text-xs text-text-secondary mt-1">
+                                            <Clock size={12} />
+                                            {new Date((evidence as any).timestamp).toLocaleDateString()}
+                                        </div>
+                                    </div>
+
+                                    {/* Media */}
+                                    <div className="bg-gray-100 rounded-lg mb-4 overflow-hidden relative group h-48">
+                                        {evidence.media_url ? (
+                                            <img
+                                                src={evidence.media_url}
+                                                alt="Evidencia"
+                                                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 cursor-pointer"
+                                                onClick={() => window.open(evidence.media_url!, '_blank')}
+                                            />
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center text-gray-400">
+                                                <span className="text-xs">Sin imagen</span>
+                                            </div>
+                                        )}
+                                        {/* Overlay Check */}
+                                        <div className="absolute top-2 right-2 flex gap-1">
+                                            {evidence.is_highlighted && <span className="bg-accent-gold text-white text-[10px] font-bold px-2 py-1 rounded shadow-sm">Destacado</span>}
+                                        </div>
+                                    </div>
+
+                                    {/* Content */}
+                                    <div className="flex-grow">
+                                        <p className="text-sm text-text-main italic mb-3 line-clamp-3">"{evidence.description}"</p>
+                                        <div className="bg-gray-50 p-2 rounded text-xs font-mono text-text-secondary">
+                                            Impacto Calculado: <span className="font-bold text-primary">{(evidence.impact_data as any).value || 0} pts</span>
+                                        </div>
+                                    </div>
+
+                                    {/* Actions */}
+                                    <div className="pt-4 border-t border-gray-100 flex gap-2 justify-end mt-4">
+                                        {activeTab === 'pending' ? (
+                                            <>
+                                                <Button size="sm" variant="danger" onClick={() => validateEvidence(evidence.id, false)} className="!rounded-lg px-2">
+                                                    <XCircle size={20} />
+                                                </Button>
+                                                <Button size="sm" variant="primary" onClick={() => validateEvidence(evidence.id, true)} className="bg-green-600 hover:bg-green-700 !rounded-lg flex-1">
+                                                    <CheckCircle size={18} /> Aprobar
+                                                </Button>
+                                            </>
+                                        ) : (
+                                            // History Actions (Highlight)
+                                            evidence.status === 'validated' && (
+                                                <button
+                                                    onClick={() => toggleHighlight(evidence.id, evidence.is_highlighted || false)}
+                                                    className={`text-xs font-bold px-4 py-2 rounded-full border transition-all w-full ${evidence.is_highlighted
+                                                        ? 'bg-accent-gold text-white border-accent-gold shadow-md'
+                                                        : 'text-text-secondary border-gray-200 hover:border-accent-gold hover:text-accent-gold'
+                                                        }`}
+                                                >
+                                                    {evidence.is_highlighted ? '★ Publicado en Vitrina' : '☆ Destacar en Vitrina'}
+                                                </button>
+                                            )
+                                        )}
+                                    </div>
+                                </Card>
+                            ))}
+                            {filteredEvidences.length === 0 && (
+                                <div className="col-span-full py-12 text-center text-text-secondary opacity-60">
+                                    <FileText size={48} className="mx-auto mb-2 text-gray-300" />
+                                    <p>No se encontraron evidencias.</p>
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
-            )}
-        </div>
+            </div>
+        </Layout>
     )
 }

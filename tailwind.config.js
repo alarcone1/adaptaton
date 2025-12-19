@@ -7,21 +7,29 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary: '#4A2574',
-        secondary: '#42A799',
+        primary: {
+          DEFAULT: '#4A2574', // Morado Profundo (Institucional)
+          light: '#6A4594',
+          dark: '#2A1050',
+        },
+        secondary: {
+          DEFAULT: '#42A799', // Turquesa (Calma/Equilibrio)
+          light: '#62C7B9',
+          dark: '#228779',
+        },
         accent: {
-          gold: '#EBC04C',
-          orange: '#E7913B',
+          gold: '#EBC04C', // Excelencia/Lujo
+          orange: '#E7913B', // Energía
         },
         background: '#F4F4F9',
         surface: '#FFFFFF',
         text: {
-            main: '#1E1F3D',
-            secondary: '#64748B'
+          main: '#1E1F3D', // Azul Noche
+          secondary: '#64748B'
         }
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
+        sans: ['Roboto', 'sans-serif'],
       }
     },
   },

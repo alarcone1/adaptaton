@@ -1,15 +1,20 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabase'
 import type { Database } from '../../lib/database.types'
-import { LogoutButton } from '../../components/LogoutButton'
+import { PageHeader } from '../../components/ui/PageHeader'
+import { Card } from '../../components/ui/Card'
+import { Button } from '../../components/ui/Button'
+import { Layout } from '../../components/ui/Layout'
+import { Search, Mail, Sparkles } from 'lucide-react'
 
-// Join Profiles to get name
-type EvidenceWithUser = Database['public']['Tables']['evidences']['Row'] & {
+type Evidence = Database['public']['Tables']['evidences']['Row'] & {
     profiles: { full_name: string | null } | null
+    challenges: { title: string | null } | null
 }
 
 export const PartnerShowcase = () => {
-    const [items, setItems] = useState<EvidenceWithUser[]>([])
+    const [evidences, setEvidences] = useState<Evidence[]>([])
+    const [searchTerm, setSearchTerm] = useState('')
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
@@ -19,73 +24,97 @@ export const PartnerShowcase = () => {
     const fetchShowcase = async () => {
         const { data } = await supabase
             .from('evidences')
-            .select('*, profiles(full_name)')
+            .select('*, profiles(full_name), challenges(title)')
             .eq('status', 'validated')
-            .eq('is_highlighted', true)
+            .order('is_highlighted', { ascending: false })
 
-        if (data) setItems(data as any)
+        if (data) setEvidences(data as any)
         setLoading(false)
     }
 
-    const requestContact = async (studentId: string) => {
-        // Here we would create a Lead. 
-        // Assuming partner is logged in.
-        const { data: { user } } = await supabase.auth.getUser()
-        if (user) {
-            await supabase.from('leads').insert({
-                partner_id: user.id, // User ID of the partner
-                student_id: studentId,
-                status: 'pending'
-            })
-            alert('Gracias por tu interés. La Universidad coordinará este encuentro.')
-        }
+    const filtered = evidences.filter(e =>
+        e.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        e.challenges?.title?.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+
+    const handleContact = (studentName: string) => {
+        alert(`Iniciando contacto con el talento: ${studentName}.`)
     }
 
     return (
-        <div className="p-6 bg-background min-h-screen">
-            <header className="mb-8">
-                <div className="flex justify-between items-center p-2 mb-4">
-                    <span className="bg-purple-100 text-purple-800 text-xs font-bold px-2.5 py-0.5 rounded border border-purple-200">Rol: Aliado</span>
-                    <LogoutButton />
-                </div>
-                <div className="text-center">
-                    <h1 className="text-4xl font-bold text-primary mb-2">Vitrina de Talento Adaptatón</h1>
-                    <p className="text-text-secondary max-w-2xl mx-auto">
-                        Descubre a los líderes juveniles que están transformando el territorio. Talento validado y certificado por la Universidad de Cartagena.
-                    </p>
-                </div>
-            </header>
+        <Layout>
+            <div className="p-4 md:p-8 space-y-8 max-w-7xl mx-auto">
+                <PageHeader title="Talento de Impacto" subtitle="Explora los proyectos destacados de nuestros estudiantes." role="Aliado" roleColor="gold" />
 
-            {loading ? <p className="text-center">Cargando talento...</p> : (
-                <div className="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6">
-                    {items.map(item => (
-                        <div key={item.id} className="break-inside-avoid bg-surface rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
-                            {item.media_url && (
-                                <img src={item.media_url} className="w-full object-cover" />
-                            )}
-                            <div className="p-5">
-                                <h3 className="font-bold text-lg text-text-main mb-1">{item.profiles?.full_name}</h3>
-                                <p className="text-text-secondary text-sm mb-4 line-clamp-3">{item.description}</p>
+                {/* Search Bar */}
+                <div className="relative max-w-xl mx-auto mb-10">
+                    <div className="absolute inset-x-0 -bottom-4 h-4 bg-black/10 blur-xl rounded-[50%]"></div>
+                    <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-primary/50" size={24} />
+                    <input
+                        type="text"
+                        placeholder="Buscar por proyecto, estudiante o tema..."
+                        className="w-full pl-16 pr-6 py-5 rounded-full border-none shadow-2xl shadow-primary/10 bg-white/90 backdrop-blur-xl focus:ring-4 focus:ring-secondary/20 text-lg transition-all outline-none placeholder:text-gray-400 font-medium"
+                        value={searchTerm}
+                        onChange={e => setSearchTerm(e.target.value)}
+                    />
+                </div>
 
-                                <div className="flex justify-between items-center">
-                                    <span className="bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full font-bold">
-                                        {(item.impact_data as any)?.value} Impacto
-                                    </span>
-                                    <button
-                                        onClick={() => requestContact(item.user_id)}
-                                        className="bg-primary text-white text-sm font-bold px-4 py-2 rounded-lg hover:bg-opacity-90"
-                                    >
-                                        Contactar
-                                    </button>
+                {loading ? <p className="text-center text-secondary animate-pulse mt-12">Cargando galería...</p> : (
+                    <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                        {filtered.map(evidence => (
+                            <Card
+                                key={evidence.id}
+                                luxury={evidence.is_highlighted || false}
+                                className={`group flex flex-col h-full hover:-translate-y-2 transition-transform duration-500`}
+                            >
+                                {/* Image with overlay */}
+                                <div className="relative overflow-hidden rounded-xl mb-5 h-64 shadow-inner">
+                                    {evidence.media_url ? (
+                                        <img
+                                            src={evidence.media_url}
+                                            className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+                                            alt="Evidence"
+                                        />
+                                    ) : (
+                                        <div className="flex items-center justify-center h-full bg-gray-100 text-gray-300">Sin Imagen</div>
+                                    )}
+
+                                    {/* Gradient Overlay on Hover */}
+                                    <div className="absolute inset-0 bg-gradient-to-t from-primary/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
+                                        <p className="text-white font-bold text-sm transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500 delay-100">
+                                            {evidence.challenges?.title}
+                                        </p>
+                                    </div>
+
+                                    {evidence.is_highlighted && (
+                                        <span className="absolute top-3 right-3 bg-white/90 backdrop-blur text-accent-gold text-xs font-bold px-3 py-1.5 rounded-full shadow-lg flex items-center gap-1">
+                                            <Sparkles size={12} fill="#EBC04C" /> Destacado
+                                        </span>
+                                    )}
                                 </div>
-                            </div>
-                        </div>
-                    ))}
-                    {items.length === 0 && (
-                        <p className="text-center col-span-full text-gray-400">Pronto verás el talento destacado aquí.</p>
-                    )}
-                </div>
-            )}
-        </div>
+
+                                <div className="flex flex-col flex-grow">
+                                    <div className="flex justify-between items-start mb-2">
+                                        <p className="text-xs font-bold text-secondary uppercase tracking-widest">{evidence.profiles?.full_name || 'Estudiante'}</p>
+                                    </div>
+
+                                    <h3 className="font-bold text-lg text-primary mb-3 leading-tight line-clamp-2">{evidence.challenges?.title}</h3>
+                                    <p className="text-text-secondary text-sm line-clamp-3 mb-6 flex-grow leading-relaxed">"{evidence.description}"</p>
+
+                                    <div className="mt-auto pt-4 border-t border-gray-100/50 flex items-center justify-between">
+                                        <div className="text-xs bg-secondary/10 text-secondary px-3 py-1 rounded-full font-bold">
+                                            Impacto: {(evidence.impact_data as any)?.value}
+                                        </div>
+                                        <Button size="sm" variant="outline" onClick={() => handleContact(evidence.profiles?.full_name || '')} className="!rounded-lg !py-1 !px-3 !text-xs">
+                                            <Mail size={14} className="mr-1" /> Contactar
+                                        </Button>
+                                    </div>
+                                </div>
+                            </Card>
+                        ))}
+                    </div>
+                )}
+            </div>
+        </Layout>
     )
 }
