@@ -4,14 +4,14 @@ import { supabase } from '../../lib/supabase'
 import { PageHeader } from '../../components/ui/PageHeader'
 import { Card } from '../../components/ui/Card'
 import { Layout } from '../../components/ui/Layout'
-import { Users, FileText, Activity } from 'lucide-react'
+import { Users, FileText, Activity, BookOpen } from 'lucide-react'
 
 
 
 export const AdminDashboard = () => {
     const navigate = useNavigate()
     const [_loading, setLoading] = useState(true)
-    const [stats, setStats] = useState({ users: 0, evidence: 0, impact: 0, resources: 0, opportunities: 0, cohorts: 0 })
+    const [stats, setStats] = useState({ users: 0, evidence: 0, impact: 0, resources: 0, opportunities: 0, cohorts: 0, subjects: 0 })
 
     const fetchData = useCallback(async () => {
         setLoading(true)
@@ -24,6 +24,7 @@ export const AdminDashboard = () => {
             // In step 435 (database.types.ts), the table is 'Opportunities'.
             const { count: opportunitiesCount } = await supabase.from('opportunities' as any).select('*', { count: 'exact', head: true })
             const { count: cohortsCount } = await supabase.from('cohorts').select('*', { count: 'exact', head: true })
+            const { count: subjectsCount } = await supabase.from('subjects').select('*', { count: 'exact', head: true })
 
             const { data: impactData } = await supabase.from('evidences').select('impact_data').eq('status', 'validated')
             const totalImpact = impactData?.reduce((acc: number, curr: any) => acc + (curr.impact_data?.value || 0), 0) || 0
@@ -34,7 +35,8 @@ export const AdminDashboard = () => {
                 impact: totalImpact,
                 resources: resourcesCount || 0,
                 opportunities: opportunitiesCount || 0,
-                cohorts: cohortsCount || 0
+                cohorts: cohortsCount || 0,
+                subjects: subjectsCount || 0
             })
         } catch (error) {
             console.error('Error fetching admin stats:', error)
@@ -84,6 +86,13 @@ export const AdminDashboard = () => {
                             <p className="text-2xl font-black text-primary">{stats.cohorts}</p>
                         </div>
                     </Card>
+                    <Card className="flex items-center gap-4 !bg-white/70 border-l-4 border-l-pink-500 cursor-pointer hover:scale-105 transition-transform hover:shadow-lg" onClick={() => navigate('/admin/subjects')}>
+                        <div className="p-3 bg-pink-100 rounded-full text-pink-600"><BookOpen size={24} /></div>
+                        <div>
+                            <p className="text-xs font-bold text-text-secondary uppercase">Materias</p>
+                            <p className="text-2xl font-black text-primary">{stats.subjects}</p>
+                        </div>
+                    </Card>
                     <Card className="flex items-center gap-4 !bg-white/70 border-l-4 border-l-purple-500">
                         <div className="p-3 bg-purple-100 rounded-full text-purple-600"><FileText size={24} /></div>
                         <div>
@@ -113,6 +122,9 @@ export const AdminDashboard = () => {
                     </Link>
                     <Link to="/admin/cohorts" className="px-6 py-3 text-text-secondary hover:text-primary hover:bg-gray-50 font-medium transition-colors flex items-center gap-2">
                         <Users size={18} /> Cohortes
+                    </Link>
+                    <Link to="/admin/subjects" className="px-6 py-3 text-text-secondary hover:text-primary hover:bg-gray-50 font-medium transition-colors flex items-center gap-2">
+                        <BookOpen size={18} /> Materias
                     </Link>
                 </div>
 

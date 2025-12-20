@@ -101,6 +101,207 @@ export type Database = {
                     }
                 ]
             }
+            course_activities: {
+                Row: {
+                    id: string
+                    cohort_id: string
+                    resource_id: string
+                    custom_instructions: string | null
+                    due_date: string | null
+                    is_active: boolean
+                    created_at: string
+                    course_id: string | null
+                }
+                Insert: {
+                    id?: string
+                    cohort_id: string
+                    resource_id: string
+                    custom_instructions?: string | null
+                    due_date?: string | null
+                    is_active?: boolean
+                    created_at?: string
+                }
+                Update: {
+                    id?: string
+                    cohort_id?: string
+                    resource_id?: string
+                    custom_instructions?: string | null
+                    due_date?: string | null
+                    is_active?: boolean
+                    created_at?: string
+                    course_id?: string | null
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "course_activities_cohort_id_fkey"
+                        columns: ["cohort_id"]
+                        referencedRelation: "cohorts"
+                        referencedColumns: ["id"]
+                    },
+                    {
+                        foreignKeyName: "course_activities_resource_id_fkey"
+                        columns: ["resource_id"]
+                        referencedRelation: "resource_library"
+                        referencedColumns: ["id"]
+                    },
+                    {
+                        foreignKeyName: "course_activities_course_id_fkey"
+                        columns: ["course_id"]
+                        referencedRelation: "courses"
+                        referencedColumns: ["id"]
+                    }
+                ]
+            }
+            subjects: {
+                Row: {
+                    id: string
+                    name: string
+                    description: string | null
+                    credits: number | null
+                    created_at: string
+                }
+                Insert: {
+                    id?: string
+                    name: string
+                    description?: string | null
+                    credits?: number | null
+                    created_at?: string
+                }
+                Update: {
+                    id?: string
+                    name?: string
+                    description?: string | null
+                    credits?: number | null
+                    created_at?: string
+                }
+                Relationships: []
+            }
+            courses: {
+                Row: {
+                    id: string
+                    cohort_id: string
+                    subject_id: string
+                    teacher_id: string
+                    start_date: string | null
+                    end_date: string | null
+                    created_at: string
+                }
+                Insert: {
+                    id?: string
+                    cohort_id: string
+                    subject_id: string
+                    teacher_id: string
+                    start_date?: string | null
+                    end_date?: string | null
+                    created_at?: string
+                }
+                Update: {
+                    id?: string
+                    cohort_id?: string
+                    subject_id?: string
+                    teacher_id?: string
+                    start_date?: string | null
+                    end_date?: string | null
+                    created_at?: string
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "courses_cohort_id_fkey"
+                        columns: ["cohort_id"]
+                        referencedRelation: "cohorts"
+                        referencedColumns: ["id"]
+                    },
+                    {
+                        foreignKeyName: "courses_subject_id_fkey"
+                        columns: ["subject_id"]
+                        referencedRelation: "subjects"
+                        referencedColumns: ["id"]
+                    },
+                    {
+                        foreignKeyName: "courses_teacher_id_fkey"
+                        columns: ["teacher_id"]
+                        referencedRelation: "profiles"
+                        referencedColumns: ["id"]
+                    }
+                ]
+            }
+            course_enrollments: {
+                Row: {
+                    id: string
+                    course_id: string
+                    student_id: string
+                    status: Database["public"]["Enums"]["enrollment_status"]
+                    created_at: string
+                }
+                Insert: {
+                    id?: string
+                    course_id: string
+                    student_id: string
+                    status?: Database["public"]["Enums"]["enrollment_status"]
+                    created_at?: string
+                }
+                Update: {
+                    id?: string
+                    course_id?: string
+                    student_id?: string
+                    status?: Database["public"]["Enums"]["enrollment_status"]
+                    created_at?: string
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "course_enrollments_course_id_fkey"
+                        columns: ["course_id"]
+                        referencedRelation: "courses"
+                        referencedColumns: ["id"]
+                    },
+                    {
+                        foreignKeyName: "course_enrollments_student_id_fkey"
+                        columns: ["student_id"]
+                        referencedRelation: "profiles"
+                        referencedColumns: ["id"]
+                    }
+                ]
+            }
+            course_attendance: {
+                Row: {
+                    id: string
+                    course_id: string
+                    student_id: string
+                    date: string
+                    status: 'present' | 'absent' | 'late' | 'excused'
+                    created_at: string
+                }
+                Insert: {
+                    id?: string
+                    course_id: string
+                    student_id: string
+                    date: string
+                    status: 'present' | 'absent' | 'late' | 'excused'
+                    created_at?: string
+                }
+                Update: {
+                    id?: string
+                    course_id?: string
+                    student_id?: string
+                    date?: string
+                    status?: 'present' | 'absent' | 'late' | 'excused'
+                    created_at?: string
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "course_attendance_course_id_fkey"
+                        columns: ["course_id"]
+                        referencedRelation: "courses"
+                        referencedColumns: ["id"]
+                    },
+                    {
+                        foreignKeyName: "course_attendance_student_id_fkey"
+                        columns: ["student_id"]
+                        referencedRelation: "profiles"
+                        referencedColumns: ["id"]
+                    }
+                ]
+            }
             evidences: {
                 Row: {
                     challenge_id: string
@@ -111,11 +312,13 @@ export type Database = {
                     impact_data: Json | null
                     is_highlighted: boolean | null
                     media_url: string | null
+                    feedback: string | null
+                    course_activity_id: string | null
                     status: Database["public"]["Enums"]["evidence_status"] | null
                     user_id: string
                 }
                 Insert: {
-                    challenge_id: string
+                    challenge_id?: string | null
                     created_at?: string | null
                     description?: string | null
                     gps_coords?: unknown | null
@@ -123,6 +326,8 @@ export type Database = {
                     impact_data?: Json | null
                     is_highlighted?: boolean | null
                     media_url?: string | null
+                    feedback?: string | null
+                    course_activity_id?: string | null
                     status?: Database["public"]["Enums"]["evidence_status"] | null
                     user_id: string
                 }
@@ -135,6 +340,8 @@ export type Database = {
                     impact_data?: Json | null
                     is_highlighted?: boolean | null
                     media_url?: string | null
+                    feedback?: string | null
+                    course_activity_id?: string | null
                     status?: Database["public"]["Enums"]["evidence_status"] | null
                     user_id?: string
                 }
@@ -327,6 +534,7 @@ export type Database = {
             evidence_status: "draft" | "submitted" | "validated" | "rejected"
             lead_status: "pending" | "contacted" | "closed"
             user_role: "student" | "teacher" | "partner" | "admin"
+            enrollment_status: "active" | "completed" | "failed" | "dropped"
         }
         CompositeTypes: {
             [_ in never]: never

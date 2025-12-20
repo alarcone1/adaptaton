@@ -9,10 +9,13 @@ import { StudentHome } from './features/student/StudentHome'
 import { CaptureEvidence } from './features/student/CaptureEvidence'
 import { StudentFeed } from './features/student/StudentFeed'
 import { StudentOpportunities } from './features/student/StudentOpportunities'
+import { StudentCourseDetail } from './features/student/StudentCourseDetail'
 import { TeacherDashboard } from './features/teacher/TeacherDashboard'
+import { TeacherCourseManager } from './features/teacher/TeacherCourseManager'
 import { PartnerShowcase } from './features/partner/PartnerShowcase'
 import { AdminDashboard } from './features/admin/AdminDashboard'
 import { ResourceList } from './features/admin/Resources/ResourceList'
+import { SubjectsManager } from './features/admin/Academic/SubjectsManager'
 import { ResourceBuilder } from './features/admin/Resources/ResourceBuilder'
 import { OpportunitiesManager } from './features/admin/Opportunities/OpportunitiesManager'
 import { UsersManager } from './features/admin/Users/UsersManager'
@@ -69,12 +72,18 @@ function Approutes() {
           <Route path="capture" element={<CaptureEvidence />} />
           <Route path="feed" element={<StudentFeed />} />
           <Route path="opportunities" element={<StudentOpportunities />} />
+          <Route path="course/:id" element={<StudentCourseDetail />} />
         </Route>
 
         {/* Teacher Routes */}
         <Route path="/teacher" element={
           <ProtectedRoute allowedRoles={['teacher']}>
             <TeacherDashboard />
+          </ProtectedRoute>
+        } />
+        <Route path="/teacher/course/:id" element={
+          <ProtectedRoute allowedRoles={['teacher']}>
+            <TeacherCourseManager />
           </ProtectedRoute>
         } />
 
@@ -89,6 +98,13 @@ function Approutes() {
         <Route path="/admin" element={
           <ProtectedRoute allowedRoles={['admin']}>
             <AdminDashboard />
+          </ProtectedRoute>
+        } />
+
+        {/* Admin Sub-Routes (Academic) */}
+        <Route path="/admin/subjects" element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <SubjectsManager />
           </ProtectedRoute>
         } />
 

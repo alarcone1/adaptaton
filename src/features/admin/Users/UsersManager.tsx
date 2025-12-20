@@ -49,16 +49,57 @@ export const UsersManager = () => {
 
     const fetchData = async () => {
         setLoading(true)
+
+        // 1. Get ALL instructors currently assigned to ANY cohort
+        // This is necessary to exclude them from the "Sin Cohorte" filter 
+        let assignedInstructorIds: string[] = []
+        if (filterCohort === 'none' || filterCohort === 'all') {
+            const { data: allInstructors } = await supabase
+                .from('cohort_instructors')
+                .select('user_id')
+
+            if (allInstructors) {
+                // Deduplicate items just in case
+                assignedInstructorIds = Array.from(new Set(allInstructors.map(i => i.user_id)))
+            }
+        }
+
+        // 2. Get instructors specific to the selected cohort filter (if referencing a specific cohort)
+        let specificCohortInstructorIds: string[] = []
+        if (filterCohort !== 'all' && filterCohort !== 'none') {
+            const { data: instructors } = await supabase
+                .from('cohort_instructors')
+                .select('user_id')
+                .eq('cohort_id', filterCohort)
+
+            if (instructors) {
+                specificCohortInstructorIds = instructors.map(i => i.user_id)
+            }
+        }
+
         let query = supabase.from('profiles').select('*, cohort:cohorts!profiles_cohort_id_fkey(name)')
 
         if (filterRole !== 'all') {
             query = query.eq('role', filterRole as any)
         }
+
         if (filterCohort !== 'all') {
             if (filterCohort === 'none') {
+                // Show users with no cohort_id AND who are not assigned instructors
                 query = query.is('cohort_id', null)
+
+                // EXCLUDE active instructors
+                if (assignedInstructorIds.length > 0) {
+                    // Using filter syntax for 'not.in' with array string
+                    query = query.not('id', 'in', `(${assignedInstructorIds.join(',')})`)
+                }
             } else {
-                query = query.eq('cohort_id', filterCohort)
+                // Combine: Students in cohort OR Instructors assigned to this specific cohort
+                if (specificCohortInstructorIds.length > 0) {
+                    query = query.or(`cohort_id.eq.${filterCohort},id.in.(${specificCohortInstructorIds.join(',')})`)
+                } else {
+                    query = query.eq('cohort_id', filterCohort)
+                }
             }
         }
 
