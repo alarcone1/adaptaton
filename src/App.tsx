@@ -12,6 +12,10 @@ import { StudentOpportunities } from './features/student/StudentOpportunities'
 import { TeacherDashboard } from './features/teacher/TeacherDashboard'
 import { PartnerShowcase } from './features/partner/PartnerShowcase'
 import { AdminDashboard } from './features/admin/AdminDashboard'
+import { ResourceList } from './features/admin/Resources/ResourceList'
+import { ResourceBuilder } from './features/admin/Resources/ResourceBuilder'
+import { OpportunitiesManager } from './features/admin/Opportunities/OpportunitiesManager'
+import { UsersManager } from './features/admin/Users/UsersManager'
 import { ImpactMap } from './features/public/ImpactMap'
 import { useOfflineSync } from './hooks/useOfflineSync'
 
@@ -83,6 +87,37 @@ function Approutes() {
         <Route path="/admin" element={
           <ProtectedRoute allowedRoles={['admin']}>
             <AdminDashboard />
+          </ProtectedRoute>
+        } />
+
+        {/* Admin Sub-Routes (Users) */}
+        <Route path="/admin/users" element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <UsersManager />
+          </ProtectedRoute>
+        } />
+
+        {/* Admin Sub-Routes (Resources) */}
+        <Route path="/admin/resources" element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <ResourceList />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/resources/new" element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <ResourceBuilder />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/resources/:id" element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <ResourceBuilder />
+          </ProtectedRoute>
+        } />
+
+        {/* Admin Sub-Routes (Opportunities) */}
+        <Route path="/admin/opportunities" element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <OpportunitiesManager />
           </ProtectedRoute>
         } />
 

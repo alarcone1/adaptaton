@@ -1,4 +1,5 @@
 import React from 'react';
+import { Rocket } from 'lucide-react';
 
 interface PageHeaderProps {
     title: string;
@@ -20,6 +21,9 @@ export const PageHeader: React.FC<PageHeaderProps> = ({ title, subtitle, role, r
         <header className="mb-6 flex justify-between items-start">
             <div>
                 <div className="flex items-center gap-3 mb-1">
+                    <div className="bg-primary/10 p-2 rounded-lg">
+                        <Rocket className="text-primary" size={28} />
+                    </div>
                     <h1 className="text-3xl font-bold text-primary">{title}</h1>
                     {role && (
                         <span className={`text-xs font-bold px-2 py-0.5 rounded border ${roleColors[roleColor]}`}>

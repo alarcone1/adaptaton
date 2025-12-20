@@ -1,8 +1,16 @@
 import { useAuth } from '../../lib/AuthContext'
-import { LogOut, User } from 'lucide-react'
+import { LogOut, User, ArrowLeft } from 'lucide-react'
+import { useLocation, useNavigate } from 'react-router-dom'
 
 export const Navbar = () => {
     const { user, signOut } = useAuth()
+    const location = useLocation()
+    const navigate = useNavigate()
+
+    // Check if we are in a sub-page (e.g., /admin/users) to show Back button instead of Logout
+    // This allows "Exit" icon position to serve as "Up" navigation
+    const isSubPage = location.pathname.includes('/admin/') && location.pathname !== '/admin'
+    // You can extend this logic to other roles if desired, e.g. /teacher/..., but user specifically asked for Admin pages
 
     return (
         <nav className="bg-gradient-to-r from-secondary to-primary p-4 shadow-lg sticky top-0 z-50">
@@ -22,13 +30,27 @@ export const Navbar = () => {
                             <User size={16} />
                             <span>{user.email?.split('@')[0]}</span>
                         </div>
-                        <button
-                            onClick={signOut}
-                            className="bg-white/20 hover:bg-white/30 p-2 rounded-full transition-colors backdrop-blur-sm"
-                            title="Cerrar Sesión"
-                        >
-                            <LogOut size={20} />
-                        </button>
+
+                        {isSubPage ? (
+                            <button
+                                onClick={() => navigate('/admin')}
+                                className="group flex items-center bg-white/20 hover:bg-white/30 p-2 rounded-full transition-all duration-300 backdrop-blur-sm overflow-hidden"
+                                title="Volver al Panel"
+                            >
+                                <ArrowLeft size={20} />
+                                <span className="max-w-0 group-hover:max-w-xs transition-all duration-300 opacity-0 group-hover:opacity-100 whitespace-nowrap overflow-hidden text-sm font-bold ml-0 group-hover:ml-2">
+                                    Volver al Panel
+                                </span>
+                            </button>
+                        ) : (
+                            <button
+                                onClick={signOut}
+                                className="bg-white/20 hover:bg-white/30 p-2 rounded-full transition-colors backdrop-blur-sm"
+                                title="Cerrar Sesión"
+                            >
+                                <LogOut size={20} />
+                            </button>
+                        )}
                     </div>
                 )}
             </div>
