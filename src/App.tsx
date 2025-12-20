@@ -16,6 +16,8 @@ import { ResourceList } from './features/admin/Resources/ResourceList'
 import { ResourceBuilder } from './features/admin/Resources/ResourceBuilder'
 import { OpportunitiesManager } from './features/admin/Opportunities/OpportunitiesManager'
 import { UsersManager } from './features/admin/Users/UsersManager'
+import { CohortsManager } from './features/admin/Cohorts/CohortsManager'
+import { CohortDetail } from './features/admin/Cohorts/CohortDetail'
 import { ImpactMap } from './features/public/ImpactMap'
 import { useOfflineSync } from './hooks/useOfflineSync'
 
@@ -118,6 +120,19 @@ function Approutes() {
         <Route path="/admin/opportunities" element={
           <ProtectedRoute allowedRoles={['admin']}>
             <OpportunitiesManager />
+          </ProtectedRoute>
+        } />
+
+
+        {/* Admin Sub-Routes (Cohorts) */}
+        <Route path="/admin/cohorts" element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <CohortsManager />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/cohorts/:id" element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <CohortDetail />
           </ProtectedRoute>
         } />
 

@@ -68,6 +68,39 @@ export type Database = {
                 }
                 Relationships: []
             }
+            cohort_instructors: {
+                Row: {
+                    assigned_at: string | null
+                    cohort_id: string
+                    user_id: string
+                }
+                Insert: {
+                    assigned_at?: string | null
+                    cohort_id: string
+                    user_id: string
+                }
+                Update: {
+                    assigned_at?: string | null
+                    cohort_id?: string
+                    user_id?: string
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "cohort_instructors_cohort_id_fkey"
+                        columns: ["cohort_id"]
+                        isOneToOne: false
+                        referencedRelation: "cohorts"
+                        referencedColumns: ["id"]
+                    },
+                    {
+                        foreignKeyName: "cohort_instructors_user_id_fkey"
+                        columns: ["user_id"]
+                        isOneToOne: false
+                        referencedRelation: "profiles"
+                        referencedColumns: ["id"]
+                    }
+                ]
+            }
             evidences: {
                 Row: {
                     challenge_id: string
@@ -217,98 +250,89 @@ export type Database = {
                 Insert: {
                     id?: string
                     created_at?: string | null
-                    resource_library: {
-                        Row: {
-                            id: string
-                            created_at: string | null
-                            title: string
-                            base_description: string | null
-                            resource_url: string | null
-                            metrics_schema: Json | null
-                        }
-                        Insert: {
-                            id?: string
-                            created_at?: string | null
-                            title: string
-                            base_description?: string | null
-                            resource_url?: string | null
-                            metrics_schema?: Json | null
-                        }
-                        Update: {
-                            id?: string
-                            created_at?: string | null
-                            title?: string
-                            base_description?: string | null
-                            resource_url?: string | null
-                            metrics_schema?: Json | null
-                        }
-                        Relationships: []
+                    title: string
+                    base_description?: string | null
+                    resource_url?: string | null
+                    metrics_schema?: Json | null
+                }
+                Update: {
+                    id?: string
+                    created_at?: string | null
+                    title?: string
+                    base_description?: string | null
+                    resource_url?: string | null
+                    metrics_schema?: Json | null
+                }
+                Relationships: []
+            },
+            profiles: {
+                Row: {
+                    id: string
+                    created_at: string | null
+                    full_name: string | null
+                    avatar_url: string | null
+                    bio: string | null
+                    role: Database["public"]["Enums"]["user_role"]
+                    cedula: string | null
+                    phone: string | null
+                    last_name: string | null
+                    cohort_id: string | null
+                    email: string | null
+                }
+                Insert: {
+                    id: string
+                    created_at?: string | null
+                    full_name?: string | null
+                    avatar_url?: string | null
+                    bio?: string | null
+                    role?: Database["public"]["Enums"]["user_role"]
+                    cedula?: string | null
+                    phone?: string | null
+                    last_name?: string | null
+                    cohort_id?: string | null
+                    email?: string | null
+                }
+                Update: {
+                    id?: string
+                    created_at?: string | null
+                    full_name?: string | null
+                    avatar_url?: string | null
+                    bio?: string | null
+                    role?: Database["public"]["Enums"]["user_role"]
+                    cedula?: string | null
+                    phone?: string | null
+                    last_name?: string | null
+                    cohort_id?: string | null
+                    email?: string | null
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "profiles_cohort_id_fkey"
+                        columns: ["cohort_id"]
+                        isOneToOne: false
+                        referencedRelation: "cohorts"
+                        referencedColumns: ["id"]
                     }
-                    profiles: {
-                        Row: {
-                            avatar_url: string | null
-                            bio: string | null
-                            cohort_id: string | null
-                            created_at: string | null
-                            full_name: string | null
-                            id: string
-                            role: Database["public"]["Enums"]["user_role"]
-                            cedula: string | null
-                            phone: string | null
-                            last_name: string | null
-                        }
-                        Insert: {
-                            avatar_url?: string | null
-                            bio?: string | null
-                            cohort_id?: string | null
-                            created_at?: string | null
-                            full_name?: string | null
-                            id: string
-                            role?: Database["public"]["Enums"]["user_role"]
-                            cedula?: string | null
-                            phone?: string | null
-                            last_name?: string | null
-                        }
-                        Update: {
-                            avatar_url?: string | null
-                            bio?: string | null
-                            cohort_id?: string | null
-                            created_at?: string | null
-                            full_name?: string | null
-                            id?: string
-                            role?: Database["public"]["Enums"]["user_role"]
-                            cedula?: string | null
-                            phone?: string | null
-                            last_name?: string | null
-                        }
-                        Relationships: [
-                            {
-                                foreignKeyName: "profiles_cohort_id_fkey"
-                                columns: ["cohort_id"]
-                                isOneToOne: false
-                                referencedRelation: "cohorts"
-                                referencedColumns: ["id"]
-                            }
-                        ]
-                    }
-                }
-                Views: {
-                    [_ in never]: never
-                }
-                Functions: {
-                    [_ in never]: never
-                }
-                Enums: {
-                    cohort_type: "minor" | "adult"
-                    evidence_status: "draft" | "submitted" | "validated" | "rejected"
-                    lead_status: "pending" | "contacted" | "closed"
-                    user_role: "student" | "teacher" | "partner" | "admin"
-                }
-                CompositeTypes: {
-                    [_ in never]: never
-                }
+                ]
             }
         }
+        Views: {
+            [_ in never]: never
+        }
+        Functions: {
+            [_ in never]: never
+        }
+        Enums: {
+            cohort_type: "minor" | "adult"
+            evidence_status: "draft" | "submitted" | "validated" | "rejected"
+            lead_status: "pending" | "contacted" | "closed"
+            user_role: "student" | "teacher" | "partner" | "admin"
+        }
+        CompositeTypes: {
+            [_ in never]: never
+        }
+    }
+}
 
 type PublicSchema = Database[Extract<keyof Database, "public">]
 

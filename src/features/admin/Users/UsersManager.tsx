@@ -1,20 +1,20 @@
 import { useEffect, useState } from 'react'
-
 import { supabase } from '../../../lib/supabase'
-import type { Database } from '../../../lib/database.types'
 import { ConfirmModal } from '../../../components/ConfirmModal'
 import { PageHeader } from '../../../components/ui/PageHeader'
 import { Card } from '../../../components/ui/Card'
 import { Button } from '../../../components/ui/Button'
 import { Badge } from '../../../components/ui/Badge'
 import { Layout } from '../../../components/ui/Layout'
-import { Users, Trash2, Edit2, Plus, MoreVertical, Mail } from 'lucide-react'
+import { Trash2, Edit2, Plus, MoreVertical, Mail, Filter, Layers } from 'lucide-react'
+import { CohortAssignmentModal } from './CohortAssignmentModal'
 
-type Profile = any // Database['public']['Tables']['profiles']['Row'] -- Bypass type error for now
+type Profile = any // Using any to bypass strict type check on 'profiles' generic for now
 
 export const UsersManager = () => {
     const [users, setUsers] = useState<Profile[]>([])
-    const [_loading, setLoading] = useState(true)
+    const [cohorts, setCohorts] = useState<any[]>([])
+    const [loading, setLoading] = useState(true)
     const [showUserForm, setShowUserForm] = useState(false)
     const [editingId, setEditingId] = useState<string | null>(null)
     const [success, setSuccess] = useState<string | null>(null)
@@ -22,46 +22,105 @@ export const UsersManager = () => {
     const [showDeleteModal, setShowDeleteModal] = useState(false)
     const [userToDelete, setUserToDelete] = useState<string | null>(null)
     const [_isDeleting, setIsDeleting] = useState(false)
-    const [newUser, setNewUser] = useState({ names: '', last_name: '', cedula: '', phone: '', email: '', password: '', role: 'student' as any })
 
-    const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set())
+    // Filters
+    const [filterRole, setFilterRole] = useState<string>('all')
+    const [filterCohort, setFilterCohort] = useState<string>('all')
+
+    const [newUser, setNewUser] = useState({
+        names: '',
+        last_name: '',
+        cedula: '',
+        phone: '',
+        email: '',
+        password: '',
+        role: 'student' as const,
+        cohort_id: ''
+    })
+
     const [activeMenu, setActiveMenu] = useState<string | null>(null)
+    const [showCohortModal, setShowCohortModal] = useState(false)
+    const [assignUser, setAssignUser] = useState<{ id: string, name: string, role: string } | null>(null)
 
-    useEffect(() => { fetchData() }, [])
+    useEffect(() => {
+        fetchData()
+        fetchCohorts()
+    }, [filterRole, filterCohort])
 
     const fetchData = async () => {
         setLoading(true)
-        const { data: usersData } = await supabase.from('profiles').select('*').order('created_at', { ascending: false })
+        let query = supabase.from('profiles').select('*, cohort:cohorts!profiles_cohort_id_fkey(name)')
+
+        if (filterRole !== 'all') {
+            query = query.eq('role', filterRole as any)
+        }
+        if (filterCohort !== 'all') {
+            if (filterCohort === 'none') {
+                query = query.is('cohort_id', null)
+            } else {
+                query = query.eq('cohort_id', filterCohort)
+            }
+        }
+
+        const { data: usersData, error } = await query.order('created_at', { ascending: false })
+
+        if (error) {
+            console.error("Users Fetch Error:", error);
+            setFormError(JSON.stringify(error));
+        }
+
         if (usersData) setUsers(usersData)
         setLoading(false)
     }
 
-    const toggleSelection = (id: string) => {
-        const newSelection = new Set(selectedUsers)
-        if (newSelection.has(id)) newSelection.delete(id)
-        else newSelection.add(id)
-        setSelectedUsers(newSelection)
-        if (activeMenu === id && selectedUsers.has(id)) setActiveMenu(null)
+    const fetchCohorts = async () => {
+        const { data } = await supabase.from('cohorts').select('id, name')
+        if (data) setCohorts(data)
     }
 
     const handleCreateUser = async (e: React.FormEvent) => {
         e.preventDefault()
         if (!newUser.email || (!editingId && !newUser.password)) return
+
+        setFormError(null)
         try {
+            const payload = {
+                ...newUser,
+                full_name: newUser.names, // Combine names for full_name logic if needed, but simplistic here
+                cohort_id: newUser.cohort_id || null
+            }
+
             if (editingId) {
-                const { error } = await supabase.functions.invoke('update-user', { body: { ...newUser, user_id: editingId, full_name: newUser.names } })
+                // Update implementation
+                // Using Edge Function for update to handle auth specifics if needed, or direct Table update for profile fields
+                // Updating profile directly for metadata fields
+                const { error } = await supabase.from('profiles').update({
+                    full_name: newUser.names,
+                    phone: newUser.phone,
+                    role: newUser.role,
+                    cohort_id: newUser.cohort_id || null,
+                    cedula: newUser.cedula
+                }).eq('id', editingId)
+
                 if (error) throw error
                 setSuccess('Usuario actualizado')
             } else {
-                const { error } = await supabase.functions.invoke('create-user', { body: { ...newUser, full_name: newUser.names } })
+                // Creation requires Edge Function to create Auth User + Profile
+                const { error } = await supabase.functions.invoke('create-user', {
+                    body: { ...payload }
+                })
                 if (error) throw error
                 setSuccess('Usuario creado')
             }
             setShowUserForm(false)
             setEditingId(null)
-            setNewUser({ names: '', last_name: '', cedula: '', phone: '', email: '', password: '', role: 'student' })
+            resetForm()
             fetchData()
         } catch (err: any) { setFormError('Error: ' + err.message) }
+    }
+
+    const resetForm = () => {
+        setNewUser({ names: '', last_name: '', cedula: '', phone: '', email: '', password: '', role: 'student', cohort_id: '' })
     }
 
     const confirmDelete = async () => {
@@ -76,6 +135,21 @@ export const UsersManager = () => {
         finally { setIsDeleting(false); setShowDeleteModal(false) }
     }
 
+    const startEdit = (user: Profile) => {
+        setNewUser({
+            names: user.full_name || '',
+            last_name: '',
+            cedula: user.cedula || '',
+            phone: user.phone || '',
+            email: user.email || '',
+            password: '',
+            role: user.role || 'student',
+            cohort_id: user.cohort_id || ''
+        })
+        setEditingId(user.id); setShowUserForm(true)
+        setActiveMenu(null)
+    }
+
     const handleResendInvite = async (email: string) => {
         try {
             const { error } = await supabase.functions.invoke('resend-invite', { body: { email } })
@@ -87,179 +161,240 @@ export const UsersManager = () => {
         }
     }
 
-    function startEdit(user: Profile) {
-        setNewUser({
-            names: user.full_name || '', last_name: '', cedula: '', phone: (user as any).phone || '', email: (user as any).email || '', password: '', role: user.role || 'student'
-        })
-        setEditingId(user.id); setShowUserForm(true)
-    }
-
     return (
         <Layout>
-            <div className="p-4 md:p-8 space-y-8 max-w-7xl mx-auto min-h-screen" onClick={() => setActiveMenu(null)}>
+            <div className="p-4 md:p-8 max-w-7xl mx-auto min-h-screen space-y-6" onClick={() => setActiveMenu(null)}>
+                <PageHeader title="Gestión de Usuarios" subtitle="Administra estudiantes, docentes y más." role="Admin" roleColor="red">
+                    <Button onClick={() => { setEditingId(null); resetForm(); setShowUserForm(true) }}>
+                        <Plus size={18} className="mr-2" /> Nuevo Usuario
+                    </Button>
+                </PageHeader>
 
-
-                <PageHeader title="Gestión de Usuarios" subtitle="Administra estudiantes, profesores y aliados." role="Admin" roleColor="red" />
-
-                <section onClick={e => e.stopPropagation()}>
-                    <div className="flex justify-between items-center mb-6">
-                        <h2 className="text-2xl font-bold text-primary">Usuarios Registrados</h2>
-                        <Button
-                            onClick={() => {
-                                if (showUserForm) {
-                                    setShowUserForm(false)
-                                    setEditingId(null)
-                                    setNewUser({ names: '', last_name: '', cedula: '', phone: '', email: '', password: '', role: 'student' as any })
-                                } else {
-                                    setNewUser({ names: '', last_name: '', cedula: '', phone: '', email: '', password: '', role: 'student' as any })
-                                    setEditingId(null)
-                                    setShowUserForm(true)
-                                }
-                            }}
-                            size="sm"
-                        >
-                            <Plus size={18} /> {showUserForm ? 'Cerrar' : 'Nuevo Usuario'}
-                        </Button>
+                {/* Filters */}
+                <Card className="p-4 flex flex-wrap gap-4 items-center">
+                    <div className="flex items-center gap-2 text-gray-500">
+                        <Filter size={18} />
+                        <span className="font-medium">Filtrar:</span>
                     </div>
+                    <select
+                        className="p-2 border rounded-md bg-gray-50 text-sm min-w-[150px]"
+                        value={filterRole}
+                        onChange={(e) => setFilterRole(e.target.value)}
+                    >
+                        <option value="all">Todos los Roles</option>
+                        <option value="student">Estudiantes</option>
+                        <option value="teacher">Docentes</option>
+                        <option value="partner">Aliados</option>
+                        <option value="admin">Administradores</option>
+                    </select>
 
-                    {showUserForm && (
-                        <Card className="mb-8 border-2 border-primary/10 p-6 md:p-8 animate-in slide-in-from-top-4 duration-300">
-                            <h3 className="font-bold text-lg mb-6 flex items-center gap-2 text-primary">
-                                {editingId ? <Edit2 size={20} /> : <Plus size={20} />}
-                                {editingId ? 'Editar Usuario' : 'Crear Nuevo Usuario'}
-                            </h3>
-                            <form onSubmit={handleCreateUser} className="grid md:grid-cols-2 gap-6">
-                                <div className="space-y-1">
-                                    <label className="text-xs font-bold text-text-secondary uppercase ml-1">Nombre Completo</label>
-                                    <input placeholder="Ej: Juan Pérez" value={newUser.names} onChange={e => setNewUser({ ...newUser, names: e.target.value })} className="w-full p-3 border border-gray-200 rounded-xl bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all outline-none" />
-                                </div>
-                                <div className="space-y-1">
-                                    <label className="text-xs font-bold text-text-secondary uppercase ml-1">Teléfono</label>
-                                    <input placeholder="Ej: 300 123 4567" value={newUser.phone} onChange={e => setNewUser({ ...newUser, phone: e.target.value })} className="w-full p-3 border border-gray-200 rounded-xl bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all outline-none" />
-                                </div>
-                                <div className="space-y-1">
-                                    <label className="text-xs font-bold text-text-secondary uppercase ml-1">Email</label>
-                                    <input placeholder="correo@ejemplo.com" type="email" value={newUser.email} onChange={e => setNewUser({ ...newUser, email: e.target.value })} className="w-full p-3 border border-gray-200 rounded-xl bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all outline-none" />
-                                </div>
-                                {!editingId && (
-                                    <div className="space-y-1">
-                                        <label className="text-xs font-bold text-text-secondary uppercase ml-1">Contraseña</label>
-                                        <input placeholder="••••••••" type="password" value={newUser.password} onChange={e => setNewUser({ ...newUser, password: e.target.value })} className="w-full p-3 border border-gray-200 rounded-xl bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all outline-none" />
+                    <select
+                        className="p-2 border rounded-md bg-gray-50 text-sm min-w-[150px]"
+                        value={filterCohort}
+                        onChange={(e) => setFilterCohort(e.target.value)}
+                    >
+                        <option value="all">Todas las Cohortes</option>
+                        <option value="none">Sin Cohorte</option>
+                        {cohorts.map(c => (
+                            <option key={c.id} value={c.id}>{c.name}</option>
+                        ))}
+                    </select>
+                </Card>
+
+                {success && (
+                    <div className="bg-green-100 text-green-700 p-3 rounded-md flex justify-between items-center">
+                        {success}
+                        <button onClick={() => setSuccess(null)}>✕</button>
+                    </div>
+                )}
+
+                {loading ? <div className="text-center py-10">Cargando...</div> : (
+                    <div className="grid grid-cols-1 gap-4">
+                        {users.map(user => (
+                            <Card
+                                key={user.id}
+                                className={`p-4 flex items-center justify-between hover:bg-gray-50 transition-colors ${activeMenu === user.id ? 'relative z-20 ring-2 ring-primary/20' : ''}`}
+                            >
+                                <div className="flex items-center gap-4">
+                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-white ${user.role === 'admin' ? 'bg-red-500' :
+                                        user.role === 'teacher' ? 'bg-purple-500' :
+                                            user.role === 'partner' ? 'bg-orange-500' : 'bg-blue-500'
+                                        }`}>
+                                        {user.full_name?.[0]?.toUpperCase() || 'U'}
                                     </div>
-                                )}
-                                <div className="space-y-1">
-                                    <label className="text-xs font-bold text-text-secondary uppercase ml-1">Rol</label>
-                                    <div className="relative">
-                                        <select value={newUser.role} onChange={e => setNewUser({ ...newUser, role: e.target.value as any })} className="w-full p-3 border border-gray-200 rounded-xl bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all outline-none appearance-none cursor-pointer">
+                                    <div>
+                                        <p className="font-bold text-gray-800">{user.full_name}</p>
+                                        <p className="text-sm text-gray-500">{user.email}</p>
+                                        <div className="flex gap-2 mt-1">
+                                            <Badge variant="gray" className="text-xs uppercase">{user.role}</Badge>
+                                            {user.cohort && (
+                                                <Badge variant="green" className="text-xs bg-blue-50 text-blue-700 border-blue-100">
+                                                    {user.cohort.name}
+                                                </Badge>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="relative">
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); setActiveMenu(activeMenu === user.id ? null : user.id) }}
+                                        className="p-2 hover:bg-gray-200 rounded-full text-gray-400 hover:text-gray-600"
+                                    >
+                                        <MoreVertical size={20} />
+                                    </button>
+
+                                    {activeMenu === user.id && (
+                                        <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border z-50 overflow-hidden text-sm">
+                                            <button onClick={() => startEdit(user)} className="w-full text-left px-4 py-3 hover:bg-gray-50 flex items-center gap-2">
+                                                <Edit2 size={16} /> Editar Perfil
+                                            </button>
+                                            {user.role === 'student' && (
+                                                <button onClick={() => startEdit(user)} className="w-full text-left px-4 py-3 hover:bg-gray-50 flex items-center gap-2 text-blue-600 font-medium">
+                                                    <Plus size={16} /> Asignar Cohorte
+                                                </button>
+                                            )}
+                                            <button onClick={() => handleResendInvite(user.email)} className="w-full text-left px-4 py-3 hover:bg-gray-50 flex items-center gap-2">
+                                                <Mail size={16} /> Reenviar Acceso
+                                            </button>
+
+                                            {/* Multi-Cohort Management for Staff */}
+                                            {user.role !== 'student' && (
+                                                <button
+                                                    onClick={() => {
+                                                        setAssignUser({ id: user.id, name: user.full_name, role: user.role });
+                                                        setShowCohortModal(true);
+                                                        setActiveMenu(null);
+                                                    }}
+                                                    className="w-full text-left px-4 py-3 hover:bg-gray-50 flex items-center gap-2 text-purple-600 font-medium"
+                                                >
+                                                    <Layers size={16} /> Gestionar Cohortes
+                                                </button>
+                                            )}
+
+                                            <div className="border-t my-1"></div>
+                                            <button
+                                                onClick={() => { setUserToDelete(user.id); setShowDeleteModal(true); setActiveMenu(null) }}
+                                                className="w-full text-left px-4 py-3 hover:bg-red-50 text-red-600 flex items-center gap-2"
+                                            >
+                                                <Trash2 size={16} /> Eliminar
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                            </Card>
+                        ))}
+                    </div>
+                )}
+
+                {/* Create/Edit User Modal */}
+                {showUserForm && (
+                    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+                        <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
+                            <h2 className="text-xl font-bold mb-4">{editingId ? 'Editar Usuario' : 'Nuevo Usuario'}</h2>
+                            {formError && <div className="bg-red-50 text-red-600 p-3 rounded mb-4 text-sm">{formError}</div>}
+
+                            <form onSubmit={handleCreateUser} className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Nombre Completo</label>
+                                    <input
+                                        required className="w-full p-2 border rounded-lg"
+                                        value={newUser.names} onChange={e => setNewUser({ ...newUser, names: e.target.value })}
+                                    />
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                                        <input
+                                            required type="email" className="w-full p-2 border rounded-lg disabled:opacity-50"
+                                            value={newUser.email} onChange={e => setNewUser({ ...newUser, email: e.target.value })}
+                                            disabled={!!editingId}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Cédula</label>
+                                        <input
+                                            className="w-full p-2 border rounded-lg"
+                                            value={newUser.cedula} onChange={e => setNewUser({ ...newUser, cedula: e.target.value })}
+                                        />
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+                                    <input
+                                        className="w-full p-2 border rounded-lg"
+                                        value={newUser.phone} onChange={e => setNewUser({ ...newUser, phone: e.target.value })}
+                                    />
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Rol</label>
+                                        <select
+                                            className="w-full p-2 border rounded-lg"
+                                            value={newUser.role}
+                                            onChange={e => setNewUser({ ...newUser, role: e.target.value as any })}
+                                        >
                                             <option value="student">Estudiante</option>
-                                            <option value="teacher">Profesor</option>
+                                            <option value="teacher">Docente</option>
                                             <option value="partner">Aliado</option>
-                                            <option value="admin">Admin</option>
+                                            <option value="admin">Administrador</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Cohorte</label>
+                                        <select
+                                            className="w-full p-2 border rounded-lg disabled:bg-gray-100 disabled:text-gray-400"
+                                            value={newUser.cohort_id}
+                                            onChange={e => setNewUser({ ...newUser, cohort_id: e.target.value })}
+                                            disabled={newUser.role !== 'student'}
+                                        >
+                                            <option value="">Sin Cohorte</option>
+                                            {cohorts.map(c => (
+                                                <option key={c.id} value={c.id}>{c.name}</option>
+                                            ))}
                                         </select>
                                     </div>
                                 </div>
-                                <div className="md:col-span-2 flex justify-end mt-4">
-                                    <Button type="submit" className="!w-auto px-8 min-w-[200px]">
-                                        Guardar Usuario
-                                    </Button>
+
+                                {!editingId && (
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Contraseña Temporal</label>
+                                        <input
+                                            required type="password" className="w-full p-2 border rounded-lg"
+                                            value={newUser.password} onChange={e => setNewUser({ ...newUser, password: e.target.value })}
+                                            placeholder="Mínimo 6 caracteres"
+                                        />
+                                    </div>
+                                )}
+
+                                <div className="flex gap-3 pt-4">
+                                    <Button variant="outline" className="flex-1" onClick={() => setShowUserForm(false)} type="button">Cancelar</Button>
+                                    <Button className="flex-1" type="submit">Guardar</Button>
                                 </div>
                             </form>
-                            {formError && <p className="text-red-500 mt-4 text-sm font-medium bg-red-50 p-3 rounded-lg border border-red-100">{formError}</p>}
-                            {success && <p className="text-green-600 mt-4 text-sm font-medium bg-green-50 p-3 rounded-lg border border-green-100">{success}</p>}
-                        </Card>
-                    )}
-
-                    <div className="bg-white/60 backdrop-blur-md rounded-xl shadow-sm border border-white/50 overflow-visible">
-                        <table className="w-full text-left border-collapse">
-                            <thead className="bg-primary/5 text-primary font-bold text-xs uppercase">
-                                <tr>
-                                    <th className="p-4 w-10">#</th>
-                                    <th className="p-4">Usuario</th>
-                                    <th className="p-4 hidden md:table-cell">Contacto</th>
-                                    <th className="p-4 hidden md:table-cell">Rol</th>
-                                    <th className="p-4 text-right">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-100/50">
-                                {users.map(user => {
-                                    const isSelected = selectedUsers.has(user.id)
-                                    return (
-                                        <tr key={user.id} className={`transition-colors ${isSelected ? 'bg-primary/5' : 'hover:bg-white/40'}`}>
-                                            <td className="p-4">
-                                                <input
-                                                    type="checkbox"
-                                                    checked={isSelected}
-                                                    onChange={() => toggleSelection(user.id)}
-                                                    className="w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary cursor-pointer"
-                                                />
-                                            </td>
-                                            <td className="p-4">
-                                                <div className="font-bold text-text-main">{user.full_name}</div>
-                                                <div className="text-xs text-text-secondary">{(user as any).email}</div>
-                                            </td>
-                                            <td className="p-4 hidden md:table-cell text-sm text-text-secondary">
-                                                {(user as any).phone || 'Sin teléfono'}
-                                            </td>
-                                            <td className="p-4 hidden md:table-cell">
-                                                <Badge variant={user.role === 'admin' ? 'purple' : user.role === 'teacher' ? 'green' : user.role === 'partner' ? 'gold' : 'gray'}>
-                                                    {user.role}
-                                                </Badge>
-                                            </td>
-                                            <td className="p-4 text-right relative">
-                                                <button
-                                                    disabled={!isSelected}
-                                                    onClick={(e) => {
-                                                        e.stopPropagation()
-                                                        setActiveMenu(activeMenu === user.id ? null : user.id)
-                                                    }}
-                                                    className={`p-2 rounded-full transition-colors ${isSelected
-                                                        ? 'text-primary hover:bg-primary/10 cursor-pointer'
-                                                        : 'text-gray-300 cursor-not-allowed'
-                                                        }`}
-                                                >
-                                                    <MoreVertical size={20} />
-                                                </button>
-
-                                                {/* Context Menu */}
-                                                {activeMenu === user.id && isSelected && (
-                                                    <div className="absolute right-8 top-10 w-48 bg-white rounded-xl shadow-xl border border-gray-100 z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-                                                        <button
-                                                            onClick={() => { startEdit(user); setActiveMenu(null) }}
-                                                            className="w-full text-left px-4 py-3 text-sm hover:bg-gray-50 flex items-center gap-2 text-text-main"
-                                                        >
-                                                            <Edit2 size={16} /> Editar
-                                                        </button>
-                                                        <button
-                                                            onClick={() => handleResendInvite((user as any).email)}
-                                                            className="w-full text-left px-4 py-3 text-sm hover:bg-gray-50 flex items-center gap-2 text-text-main"
-                                                        >
-                                                            <Mail size={16} /> Reenviar Correo
-                                                        </button>
-                                                        <div className="h-px bg-gray-100 my-0"></div>
-                                                        <button
-                                                            onClick={() => { setUserToDelete(user.id); setShowDeleteModal(true); setActiveMenu(null) }}
-                                                            className="w-full text-left px-4 py-3 text-sm hover:bg-red-50 flex items-center gap-2 text-red-600"
-                                                        >
-                                                            <Trash2 size={16} /> Eliminar
-                                                        </button>
-                                                    </div>
-                                                )}
-                                            </td>
-                                        </tr>
-                                    )
-                                })}
-                            </tbody>
-                        </table>
+                        </div>
                     </div>
-                </section>
+                )}
 
                 <ConfirmModal
                     isOpen={showDeleteModal}
-                    title="Eliminar Usuario"
-                    message="¿Estás seguro?"
-                    onConfirm={confirmDelete}
                     onCancel={() => setShowDeleteModal(false)}
+                    onConfirm={confirmDelete}
+                    title="Eliminar Usuario"
+                    message="¿Estás seguro? Esta acción no se puede deshacer."
                 />
+
+                {/* Multi Cohort Modal */}
+                {assignUser && (
+                    <CohortAssignmentModal
+                        isOpen={showCohortModal}
+                        onClose={() => { setShowCohortModal(false); setAssignUser(null) }}
+                        userId={assignUser.id}
+                        userName={assignUser.name}
+                        userRole={assignUser.role}
+                    />
+                )}
             </div>
         </Layout>
     )

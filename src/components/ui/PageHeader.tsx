@@ -6,9 +6,10 @@ interface PageHeaderProps {
     subtitle?: string;
     role?: string;
     roleColor?: 'purple' | 'blue' | 'red' | 'green' | 'gold';
+    children?: React.ReactNode;
 }
 
-export const PageHeader: React.FC<PageHeaderProps> = ({ title, subtitle, role, roleColor = 'purple' }) => {
+export const PageHeader: React.FC<PageHeaderProps> = ({ title, subtitle, role, roleColor = 'purple', children }) => {
     const roleColors = {
         purple: "bg-purple-100 text-purple-800 border-purple-200",
         blue: "bg-blue-100 text-blue-800 border-blue-200",
@@ -33,6 +34,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({ title, subtitle, role, r
                 </div>
                 {subtitle && <p className="text-text-secondary">{subtitle}</p>}
             </div>
+            {children && <div>{children}</div>}
         </header>
     );
 };

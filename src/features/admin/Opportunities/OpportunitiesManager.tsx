@@ -11,7 +11,7 @@ import { Layout } from '../../../components/ui/Layout'
 
 export const OpportunitiesManager = () => {
     const [opportunities, setOpportunities] = useState<any[]>([])
-    const [loading, setLoading] = useState(true)
+    // Removed unused loading state
     const [showForm, setShowForm] = useState(false)
     const [formData, setFormData] = useState<any>({ title: '', description: '', partner_name: '', target_cohort_type: 'all', is_active: true })
     const [editingId, setEditingId] = useState<string | null>(null)
@@ -20,10 +20,8 @@ export const OpportunitiesManager = () => {
     useEffect(() => { fetchOpportunities() }, [])
 
     const fetchOpportunities = async () => {
-        setLoading(true)
-        const { data } = await supabase.from('opportunities').select('*').order('created_at', { ascending: false })
+        const { data } = await supabase.from('opportunities' as any).select('*').order('created_at', { ascending: false })
         if (data) setOpportunities(data)
-        setLoading(false)
     }
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -31,9 +29,9 @@ export const OpportunitiesManager = () => {
         const payload = { ...formData, target_cohort_type: formData.target_cohort_type === 'all' ? null : formData.target_cohort_type }
 
         if (editingId) {
-            await supabase.from('opportunities').update(payload).eq('id', editingId)
+            await supabase.from('opportunities' as any).update(payload).eq('id', editingId)
         } else {
-            await supabase.from('opportunities').insert(payload)
+            await supabase.from('opportunities' as any).insert(payload)
         }
 
         setShowForm(false)
@@ -58,12 +56,12 @@ export const OpportunitiesManager = () => {
         const newState = !opp.is_active
         // Optimistic UI
         setOpportunities(prev => prev.map(p => p.id === opp.id ? { ...p, is_active: newState } : p))
-        await supabase.from('opportunities').update({ is_active: newState }).eq('id', opp.id)
+        await supabase.from('opportunities' as any).update({ is_active: newState }).eq('id', opp.id)
     }
 
     const handleDelete = async () => {
         if (!deleteId) return
-        await supabase.from('opportunities').delete().eq('id', deleteId)
+        await supabase.from('opportunities' as any).delete().eq('id', deleteId)
         setDeleteId(null)
         fetchOpportunities()
     }

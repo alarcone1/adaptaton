@@ -33,13 +33,13 @@ export const ResourceBuilder = () => {
 
     const fetchResource = async (resourceId: string) => {
         setLoading(true)
-        const { data, error } = await supabase.from('resource_library').select('*').eq('id', resourceId).single()
+        const { data } = await supabase.from('resource_library').select('*').eq('id', resourceId).single()
         if (data) {
             setTitle(data.title)
             setDescription(data.base_description || '')
             setResourceUrl(data.resource_url || '')
             if (data.metrics_schema && Array.isArray(data.metrics_schema)) {
-                setMetrics(data.metrics_schema as MetricField[])
+                setMetrics(data.metrics_schema as any)
             }
         }
         setLoading(false)
