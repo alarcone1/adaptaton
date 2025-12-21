@@ -19,6 +19,7 @@ export const CaptureEvidence = () => {
     // Query Params
     const courseId = searchParams.get('courseId')
     const activityId = searchParams.get('activityId')
+    const isRetry = searchParams.get('retry') === 'true'
 
     const [challenges, setChallenges] = useState<Challenge[]>([])
     const [targetActivity, setTargetActivity] = useState<any>(null)
@@ -56,12 +57,28 @@ export const CaptureEvidence = () => {
 
     const fetchTargetActivity = async () => {
         if (!activityId) return
-        const { data } = await supabase
-            .from('course_activities' as any)
-            .select('*, resource:resource_library(*)')
-            .eq('id', activityId)
-            .single()
-        setTargetActivity(data)
+
+        // 1. Try Local Storage first (Offline/Sync data)
+        const storedActivities = localStorage.getItem('offline_activities')
+        if (storedActivities) {
+            const parsed = JSON.parse(storedActivities)
+            const found = parsed.find((a: any) => a.id === activityId)
+            if (found) {
+                setTargetActivity(found)
+                console.log('Loaded activity from cache')
+                return
+            }
+        }
+
+        // 2. Fallback to API if online
+        if (isOnline) {
+            const { data } = await supabase
+                .from('course_activities' as any)
+                .select('*, resource:resource_library(*)')
+                .eq('id', activityId)
+                .single()
+            if (data) setTargetActivity(data)
+        }
     }
 
     const fetchChallenges = async () => {
@@ -134,7 +151,29 @@ export const CaptureEvidence = () => {
                 timestamp: new Date().toISOString(),
                 status: 'submitted',
                 type: 'evidence_submission', // Tag for IDB
-                imageBlob: imageFile // Store file for offline
+                imageBlob: imageFile, // Store file for offline
+                parent_evidence_id: undefined as string | undefined // Will be filled if retry
+            }
+
+            // Retry Logic: Find previous rejected evidence
+            if (isRetry && activityId) {
+                // Try to find it in IDB or query supabase if online? 
+                // Simplest is to check offline cache or Supabase
+                // But for now, let's just assume we might need to fetch it or finding it is complex without more context.
+                // ACTUALLY, strict business rule: "Nuevo Intento" links to parent.
+                // We will try to fetch the latest rejected evidence for this activity.
+                if (isOnline) {
+                    const { data: prev } = await supabase.from('evidences')
+                        .select('id')
+                        .eq('course_activity_id', activityId)
+                        .eq('user_id', session!.user.id)
+                        .eq('status', 'rejected')
+                        .order('created_at', { ascending: false })
+                        .limit(1)
+                        .single()
+
+                    if (prev) evidenceData.parent_evidence_id = prev.id
+                }
             }
 
             if (isOnline) {
@@ -161,6 +200,7 @@ export const CaptureEvidence = () => {
                     description,
                     media_url: mediaUrl,
                     location: location as any,
+                    parent_evidence_id: evidenceData.parent_evidence_id || null, // Link if retry
                     impact_data: { value: 0, source: 'manual_verification' } // Default 0 until validated
                 })
 

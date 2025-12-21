@@ -23,6 +23,7 @@ import { CohortsManager } from './features/admin/Cohorts/CohortsManager'
 import { CohortDetail } from './features/admin/Cohorts/CohortDetail'
 import { ImpactMap } from './features/public/ImpactMap'
 import { useOfflineSync } from './hooks/useOfflineSync'
+import { useAutoSync } from './hooks/useAutoSync'
 
 const ProtectedRoute = ({ children, allowedRoles }: { children: React.ReactNode, allowedRoles?: string[] }) => {
   const { session, role, loading } = useAuth()
@@ -40,19 +41,27 @@ function Approutes() {
   const { loading } = useAuth()
   const { isOnline, isSyncing } = useOfflineSync()
 
+  // Silent Sync Hook
+  const { syncMessage } = useAutoSync()
+
   if (loading) return <div className="h-screen flex items-center justify-center text-primary">Cargando Adaptatón...</div>
 
   return (
     <div className="min-h-screen bg-background font-sans text-text-main">
-      {/* Offline Indicator */}
+      {/* Offline & Sync Indicators */}
       {!isOnline && (
-        <div className="bg-red-500 text-white text-center text-xs py-1">
+        <div className="bg-red-500 text-white text-center text-xs py-1 transition-all">
           Modo Offline - Guardando en dispositivo
         </div>
       )}
       {isSyncing && (
-        <div className="bg-blue-500 text-white text-center text-xs py-1">
+        <div className="bg-blue-500 text-white text-center text-xs py-1 transition-all">
           Sincronizando datos...
+        </div>
+      )}
+      {syncMessage && (
+        <div className="bg-green-600 text-white text-center text-xs py-1 font-bold transition-all animate-pulse">
+          {syncMessage}
         </div>
       )}
 

@@ -67,11 +67,14 @@ export const useOfflineSync = () => {
 
                     // 2. Insert Evidence
                     const { error } = await supabase.from('evidences').insert({
-                        challenge_id: item.challenge_id,
+                        challenge_id: item.challenge_id || null, // Ensure explicit null if undefined
+                        course_activity_id: item.course_activity_id || null,
+                        parent_evidence_id: item.parent_evidence_id || null,
+                        attempt_number: item.attempt_number || 1,
                         user_id: item.user_id,
                         description: item.description,
                         impact_data: item.impact_data,
-                        gps_coords: item.gps_coords,
+                        gps_coords: item.gps_coords, // Ensure consistent naming with DB (gps_coords vs location)
                         media_url: finalMediaUrl,
                         status: 'submitted'
                     })
