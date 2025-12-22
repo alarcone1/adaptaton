@@ -1,10 +1,11 @@
 import React from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './lib/AuthContext'
+import { ToastProvider } from './lib/ToastContext'
 import { Login } from './pages/Login'
 import { RegisterAdmin } from './pages/RegisterAdmin'
 import { LandingPage } from './pages/LandingPage'
-import { StudentLayout } from './features/student/StudentLayout'
+
 import { StudentHome } from './features/student/StudentHome'
 import { CaptureEvidence } from './features/student/CaptureEvidence'
 import { StudentFeed } from './features/student/StudentFeed'
@@ -12,8 +13,11 @@ import { StudentOpportunities } from './features/student/StudentOpportunities'
 import { StudentCourseDetail } from './features/student/StudentCourseDetail'
 import { TeacherDashboard } from './features/teacher/TeacherDashboard'
 import { TeacherCourseManager } from './features/teacher/TeacherCourseManager'
-import { PartnerShowcase } from './features/partner/PartnerShowcase'
+
 import { AdminDashboard } from './features/admin/AdminDashboard'
+import { StudentLayout } from './features/student/StudentLayout'
+import { TeacherLayout } from './features/teacher/TeacherLayout'
+import { AdminLayout } from './features/admin/AdminLayout'
 import { ResourceList } from './features/admin/Resources/ResourceList'
 import { SubjectsManager } from './features/admin/Academic/SubjectsManager'
 import { ResourceBuilder } from './features/admin/Resources/ResourceBuilder'
@@ -36,6 +40,10 @@ const ProtectedRoute = ({ children, allowedRoles }: { children: React.ReactNode,
 
   return children
 }
+
+import { PartnerLayout } from './features/partner/PartnerLayout'
+import { PartnerShowcase } from './features/partner/PartnerShowcase'
+import { MyLeads } from './features/partner/MyLeads'
 
 function Approutes() {
   const { loading } = useAuth()
@@ -75,6 +83,7 @@ function Approutes() {
         <Route path="/" element={<LandingPage />} />
 
         {/* Student Routes */}
+        {/* Student Routes */}
         <Route path="/student" element={<ProtectedRoute allowedRoles={['student']}><StudentLayout /></ProtectedRoute>}>
           <Route index element={<Navigate to="home" replace />} />
           <Route path="home" element={<StudentHome />} />
@@ -87,79 +96,43 @@ function Approutes() {
         {/* Teacher Routes */}
         <Route path="/teacher" element={
           <ProtectedRoute allowedRoles={['teacher']}>
-            <TeacherDashboard />
+            <TeacherLayout />
           </ProtectedRoute>
-        } />
-        <Route path="/teacher/course/:id" element={
-          <ProtectedRoute allowedRoles={['teacher']}>
-            <TeacherCourseManager />
-          </ProtectedRoute>
-        } />
+        }>
+          <Route index element={<TeacherDashboard />} />
+          <Route path="course/:id" element={<TeacherCourseManager />} />
+        </Route>
 
         {/* Partner Routes */}
-        <Route path="/partner" element={
-          <ProtectedRoute allowedRoles={['partner']}>
-            <PartnerShowcase />
-          </ProtectedRoute>
-        } />
+        <Route
+          path="/partner"
+          element={
+            <ProtectedRoute allowedRoles={['partner']}>
+              <PartnerLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<Navigate to="showcase" replace />} />
+          <Route path="showcase" element={<PartnerShowcase />} />
+          <Route path="leads" element={<MyLeads />} />
+        </Route>
 
         {/* Admin Routes */}
         <Route path="/admin" element={
           <ProtectedRoute allowedRoles={['admin']}>
-            <AdminDashboard />
+            <AdminLayout />
           </ProtectedRoute>
-        } />
-
-        {/* Admin Sub-Routes (Academic) */}
-        <Route path="/admin/subjects" element={
-          <ProtectedRoute allowedRoles={['admin']}>
-            <SubjectsManager />
-          </ProtectedRoute>
-        } />
-
-        {/* Admin Sub-Routes (Users) */}
-        <Route path="/admin/users" element={
-          <ProtectedRoute allowedRoles={['admin']}>
-            <UsersManager />
-          </ProtectedRoute>
-        } />
-
-        {/* Admin Sub-Routes (Resources) */}
-        <Route path="/admin/resources" element={
-          <ProtectedRoute allowedRoles={['admin']}>
-            <ResourceList />
-          </ProtectedRoute>
-        } />
-        <Route path="/admin/resources/new" element={
-          <ProtectedRoute allowedRoles={['admin']}>
-            <ResourceBuilder />
-          </ProtectedRoute>
-        } />
-        <Route path="/admin/resources/:id" element={
-          <ProtectedRoute allowedRoles={['admin']}>
-            <ResourceBuilder />
-          </ProtectedRoute>
-        } />
-
-        {/* Admin Sub-Routes (Opportunities) */}
-        <Route path="/admin/opportunities" element={
-          <ProtectedRoute allowedRoles={['admin']}>
-            <OpportunitiesManager />
-          </ProtectedRoute>
-        } />
-
-
-        {/* Admin Sub-Routes (Cohorts) */}
-        <Route path="/admin/cohorts" element={
-          <ProtectedRoute allowedRoles={['admin']}>
-            <CohortsManager />
-          </ProtectedRoute>
-        } />
-        <Route path="/admin/cohorts/:id" element={
-          <ProtectedRoute allowedRoles={['admin']}>
-            <CohortDetail />
-          </ProtectedRoute>
-        } />
+        }>
+          <Route index element={<AdminDashboard />} />
+          <Route path="users" element={<UsersManager />} />
+          <Route path="resources" element={<ResourceList />} />
+          <Route path="resources/new" element={<ResourceBuilder />} />
+          <Route path="resources/:id" element={<ResourceBuilder />} />
+          <Route path="opportunities" element={<OpportunitiesManager />} />
+          <Route path="cohorts" element={<CohortsManager />} />
+          <Route path="cohorts/:id" element={<CohortDetail />} />
+          <Route path="subjects" element={<SubjectsManager />} />
+        </Route>
 
         {/* Catch all - 404 to Home (Trigger Redirect) */}
         <Route path="*" element={<Navigate to="/" replace />} />
@@ -173,7 +146,9 @@ function App() {
   return (
     <Router>
       <AuthProvider>
-        <Approutes />
+        <ToastProvider>
+          <Approutes />
+        </ToastProvider>
       </AuthProvider>
     </Router>
   )

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../../../lib/supabase'
-import { Layout } from '../../../components/ui/Layout'
+
 import { Card } from '../../../components/ui/Card'
 import { Button } from '../../../components/ui/Button'
 import { Book, Plus, Edit2, Trash2, X } from 'lucide-react'
@@ -99,61 +99,61 @@ export const SubjectsManager = () => {
     }
 
     return (
-        <Layout>
-            <div className="max-w-7xl mx-auto p-4 md:p-8 space-y-8">
-                <div className="flex justify-between items-center">
-                    <div>
-                        <h1 className="text-3xl font-black text-gray-800">Catálogo de Materias</h1>
-                        <p className="text-gray-500">Define las áreas de conocimiento disponibles para la academia.</p>
-                    </div>
-                    <Button onClick={openModal}>
-                        <Plus size={20} className="mr-2" /> Nueva Materia
-                    </Button>
+        <div className="max-w-7xl mx-auto p-4 md:p-8 space-y-8">
+            <div className="flex justify-between items-center">
+                <div>
+                    <h1 className="text-3xl font-black text-gray-800">Catálogo de Materias</h1>
+                    <p className="text-gray-500">Define las áreas de conocimiento disponibles para la academia.</p>
                 </div>
-
-                {loading ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {[1, 2, 3].map(i => <div key={i} className="h-40 bg-gray-100 animate-pulse rounded-xl"></div>)}
-                    </div>
-                ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {subjects.map(subject => (
-                            <Card key={subject.id} className="group hover:shadow-lg transition-all border-l-4 border-l-blue-500 p-6">
-                                <div className="flex justify-between items-start mb-4">
-                                    <div className="p-3 bg-blue-50 text-blue-600 rounded-lg group-hover:bg-blue-600 group-hover:text-white transition-colors">
-                                        <Book size={24} />
-                                    </div>
-                                    <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <button onClick={() => handleEdit(subject)} className="p-2 hover:bg-gray-100 rounded-full text-blue-600">
-                                            <Edit2 size={16} />
-                                        </button>
-                                        <button onClick={() => handleDelete(subject.id)} className="p-2 hover:bg-red-50 rounded-full text-red-600">
-                                            <Trash2 size={16} />
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <h3 className="text-xl font-bold text-gray-800 mb-2">{subject.name}</h3>
-                                <p className="text-gray-500 text-sm mb-4 line-clamp-3">{subject.description || 'Sin descripción'}</p>
-
-                                <div className="pt-4 border-t border-gray-100 flex justify-between items-center text-sm">
-                                    <span className="text-gray-400">Créditos Académicos</span>
-                                    <span className="font-bold text-gray-800 bg-gray-100 px-3 py-1 rounded-full">{subject.credits} CR</span>
-                                </div>
-                            </Card>
-                        ))}
-                        {subjects.length === 0 && (
-                            <div className="col-span-full text-center py-20 bg-gray-50 rounded-xl border border-dashed border-gray-300">
-                                <Book size={48} className="mx-auto text-gray-300 mb-4" />
-                                <p className="text-gray-500 font-medium">No hay materias registradas.</p>
-                                <Button variant="secondary" className="mt-4" onClick={openModal}>Crear la primera</Button>
-                            </div>
-                        )}
-                    </div>
-                )}
+                <Button onClick={openModal}>
+                    <Plus size={20} className="mr-2" /> Nueva Materia
+                </Button>
             </div>
 
+            {loading ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {[1, 2, 3].map(i => <div key={i} className="h-40 bg-gray-100 animate-pulse rounded-xl"></div>)}
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {subjects.map(subject => (
+                        <Card key={subject.id} className="group hover:shadow-lg transition-all border-l-4 border-l-blue-500 p-6">
+                            <div className="flex justify-between items-start mb-4">
+                                <div className="p-3 bg-blue-50 text-blue-600 rounded-lg group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                                    <Book size={24} />
+                                </div>
+                                <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <button onClick={() => handleEdit(subject)} className="p-2 hover:bg-gray-100 rounded-full text-blue-600">
+                                        <Edit2 size={16} />
+                                    </button>
+                                    <button onClick={() => handleDelete(subject.id)} className="p-2 hover:bg-red-50 rounded-full text-red-600">
+                                        <Trash2 size={16} />
+                                    </button>
+                                </div>
+                            </div>
+
+                            <h3 className="text-xl font-bold text-gray-800 mb-2">{subject.name}</h3>
+                            <p className="text-gray-500 text-sm mb-4 line-clamp-3">{subject.description || 'Sin descripción'}</p>
+
+                            <div className="pt-4 border-t border-gray-100 flex justify-between items-center text-sm">
+                                <span className="text-gray-400">Créditos Académicos</span>
+                                <span className="font-bold text-gray-800 bg-gray-100 px-3 py-1 rounded-full">{subject.credits} CR</span>
+                            </div>
+                        </Card>
+                    ))}
+                    {subjects.length === 0 && (
+                        <div className="col-span-full text-center py-20 bg-gray-50 rounded-xl border border-dashed border-gray-300">
+                            <Book size={48} className="mx-auto text-gray-300 mb-4" />
+                            <p className="text-gray-500 font-medium">No hay materias registradas.</p>
+                            <Button variant="secondary" className="mt-4" onClick={openModal}>Crear la primera</Button>
+                        </div>
+                    )}
+                </div>
+            )}
+
+
             {/* Modal */}
+
             {showModal && (
                 <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
                     <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
@@ -213,6 +213,8 @@ export const SubjectsManager = () => {
                     </div>
                 </div>
             )}
-        </Layout>
+        </div>
     )
 }
+
+

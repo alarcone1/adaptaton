@@ -4,37 +4,35 @@ Este documento detalla los roles de usuario existentes en la plataforma Adaptat�
 
 ---
 
-## 1. 🎓 Estudiante (Student)
-El rol principal del sistema. Son los beneficiarios que participan en los retos, generan evidencia y construyen su portafolio.
+## 1. 🛠️ Administrador (Admin)
+Gestores de la plataforma tecnológica y operativa.
 
 ### Funcionalidades Actuales
-- **Dashboard Personal**:
-  - Vista resumen de su progreso con tarjeta "Tu Progreso" y métricas de impacto acumuladas.
-  - Sección **"Mis Cursos"** para acceso rápido a las materias inscritas por cohorte.
-- **La Ruta del Aprendiz (`/student/course/:id`)**:
-  - **Experiencia de Línea de Tiempo**: Visualización interactiva vertical (`ActivityTimeline`) que reemplaza las listas tradicionales.
-  - **Lógica de Bloqueo**: Las actividades futuras aparecen bloqueadas (candado) hasta que se completen los prerrequisitos.
-  - **Gestión de Rechazos**: Si una actividad es rechazada por el docente, se crea una ramificación visual ("Branching") que permite un "Nuevo Intento" manteniendo el historial.
-- **Captura de Evidencia Robusta (`/student/capture`)**:
-  - **Arquitectura Offline-First**: 
-    - El "Motor de Sincronización Silenciosa" (`useAutoSync`) descarga automáticamente esquemas y recursos al iniciar sesión.
-    - Las evidencias se guardan en cola local (IndexedDB) si no hay conexión.
-    - Re-intento automático de subida al recuperar conexión.
-  - **Soporte de Reintentos**: Vinculación automática de nuevas evidencias con sus versiones anteriores (rechazadas) mediante `parent_evidence_id`.
-  - Herramientas de campo: Geolocalización (GPS) y cámara integrada.
-- **Feed de Comunidad (`/student/feed`)**: Visualización de evidencias generadas por sus compañeros (limitado por cohorte para privacidad).
-- **Oportunidades (`/student/opportunities`)**: Acceso a ofertas o beneficios publicados por los aliados (Partners).
+- **Torre de Control (`AdminDashboard`)**: 
+  - **NUEVO:** Layout Estándar con Sidebar lateral y navegación unificada.
+  - **NUEVO:** Widgets de Productividad: "Accesos Rápidos" y "Resumen del Sistema" (Log de actividad tiempo real).
+  - KPIs en tiempo real: Usuarios totales, Cohortes activos, Oportunidades, Evidencias globales.
+- **Gestión de Usuarios ("People Ops")**: 
+  - ABM completo (Crear, Editar, Eliminar) de todos los roles.
+  - Asignación de **múltiples cohortes** para roles de staff.
+  - Control de acceso y matriculación.
+- **Gestión Académica ("Academic Ops")**:
+  - **Cohortes (`/admin/cohorts`)**: Administración del ciclo de vida de los grupos (Minors/Adults).
+  - **Materias (`/admin/subjects`)**: Catálogo maestro de asignaturas y créditos.
+- **Arquitecto de Recursos (`ResourceBuilder`)**: 
+  - **Constructor de Esquemas**: Creación dinámica de retos definiendo qué métricas capturar (Texto, Foto, Checkbox, GPS, Numérico).
+  - Centralización de la biblioteca de recursos reutilizables.
+- **Gestor de Oportunidades**: 
+  - Publicación y segmentación de ofertas (Becas, Empleo) para estudiantes.
 
 ### 🚀 Futuros Desarrollos
-1. **Gamificación Avanzada**:
-   - *Sistema de Insignias*: Otorgar badges digitales por hitos (ej. "Primer Reto Complado", "Explorador").
-   - *Rachas (Streaks)*: Bonificación por subir evidencia días consecutivos.
-   - *Niveles*: Experiencia (XP) que desbloquea avatares o temas visuales.
-2. **Portafolio Exportable**:
-   - Generación automática de un CV/Hoja de Vida en PDF basado en las habilidades demostradas en los retos.
-   - Página pública de perfil ("Talent Card") para compartir en LinkedIn.
-3. **Feedback entre Pares**:
-   - Posibilidad de dar "kudos" o comentarios constructivos a las evidencias de compañeros de cohorte.
+1. **CMS de Contenidos**:
+   - Editor visual para crear nuevos Retos/Misiones sin tocar código.
+   - Gestión de noticias o blog interno de la plataforma.
+2. **Auditoría y Logs**:
+   - Historial detallado de acciones sensibles (quién borró qué, quién validó a quién).
+3. **Módulo de Reportes**:
+   - Generación de reportes de impacto para donantes/directivos (PDF/Excel) con un clic.
 
 ---
 
@@ -42,6 +40,7 @@ El rol principal del sistema. Son los beneficiarios que participan en los retos,
 Encargados de guiar el proceso y validar el aprendizaje de los estudiantes.
 
 ### Funcionalidades Actuales
+- **NUEVO:** Navegación Simplificada (Sidebar en Escritorio / Bottom Nav en Móvil).
 - **Dashboard de Docente**: Panel de control centralizado (`TeacherCourseManager`).
 - **Gestión Integral de Cursos**:
   - **Planificación**: Visualización de módulos y asignación de actividades.
@@ -66,7 +65,44 @@ Encargados de guiar el proceso y validar el aprendizaje de los estudiantes.
 
 ---
 
-## 3. 🤝 Aliado (Partner)
+## 3. 🎓 Estudiante (Student)
+El rol principal del sistema. Son los beneficiarios que participan en los retos, generan evidencia y construyen su portafolio.
+
+### Funcionalidades Actuales
+- **NUEVO:** Experiencia de Usuario Unificada (Sidebar fijo en Desktop, Navegación Inferior en Móvil).
+- **Dashboard Personal**:
+  - Vista resumen de su progreso con tarjeta "Tu Progreso" y métricas de impacto acumuladas.
+  - Sección **"Mis Cursos"** para acceso rápido a las materias inscritas por cohorte.
+- **La Ruta del Aprendiz (`/student/course/:id`)**:
+  - **Experiencia de Línea de Tiempo**: Visualización interactiva vertical (`ActivityTimeline`) que reemplaza las listas tradicionales.
+  - **Lógica de Bloqueo**: Las actividades futuras aparecen bloqueadas (candado) hasta que se completen los prerrequisitos.
+  - **Gestión de Rechazos**: Si una actividad es rechazada por el docente, se crea una ramificación visual ("Branching") que permite un "Nuevo Intento" manteniendo el historial.
+- **Captura de Evidencia Robusta (`/student/capture`)**:
+  - **Arquitectura Offline-First**: 
+    - El "Motor de Sincronización Silenciosa" (`useAutoSync`) descarga automáticamente esquemas y recursos al iniciar sesión.
+    - Las evidencias se guardan en cola local (IndexedDB) si no hay conexión.
+    - **Re-intento Inteligente**: Si falla la sincronización, el sistema reintenta hasta 3 veces automáticamente.
+    - **Feedback Visual**: Notificaciones inmediatas (Toasts) informan sobre el estado de la carga ("Sincronizando...", "Completado").
+    - **Prevención de Duplicados**: Lógica de verificación antes de subir archivos multimedia.
+  - **Soporte de Reintentos Académicos**: Vinculación automática de nuevas evidencias con sus versiones anteriores (rechazadas) mediante `parent_evidence_id`.
+  - Herramientas de campo: Geolocalización (GPS) y cámara integrada.
+- **Feed de Comunidad (`/student/feed`)**: Visualización de evidencias generadas por sus compañeros (limitado por cohorte para privacidad).
+- **Oportunidades (`/student/opportunities`)**: Acceso a ofertas o beneficios publicados por los aliados (Partners).
+
+### 🚀 Futuros Desarrollos
+1. **Gamificación Avanzada**:
+   - *Sistema de Insignias*: Otorgar badges digitales por hitos (ej. "Primer Reto Complado", "Explorador").
+   - *Rachas (Streaks)*: Bonificación por subir evidencia días consecutivos.
+   - *Niveles*: Experiencia (XP) que desbloquea avatares o temas visuales.
+2. **Portafolio Exportable**:
+   - Generación automática de un CV/Hoja de Vida en PDF basado en las habilidades demostradas en los retos.
+   - Página pública de perfil ("Talent Card") para compartir en LinkedIn.
+3. **Feedback entre Pares**:
+   - Posibilidad de dar "kudos" o comentarios constructivos a las evidencias de compañeros de cohorte.
+
+---
+
+## 4. 🤝 Aliado (Partner)
 Organizaciones o empresas interesadas en el impacto social o en conectar con talento joven.
 
 ### Funcionalidades Actuales
@@ -83,36 +119,6 @@ Organizaciones o empresas interesadas en el impacto social o en conectar con tal
    - Dashboard de impacto: Ver cuántos estudiantes participaron en su reto y el impacto generado (ej. árboles plantados, horas de código).
 3. **Mensajería Directa**:
    - Canal seguro para contactar a estudiantes prometedores (supervisado por docentes/cuidadores si aplica a menores).
-
----
-
-## 4. 🛠️ Administrador (Admin)
-Gestores de la plataforma tecnológica y operativa.
-
-### Funcionalidades Actuales
-- **Torre de Control (`AdminDashboard`)**: 
-  - KPIs en tiempo real: Usuarios totales, Cohortes activos, Oportunidades, Evidencias globales.
-- **Gestión de Usuarios ("People Ops")**: 
-  - ABM completo (Crear, Editar, Eliminar) de todos los roles.
-  - Asignación de **múltiples cohortes** para roles de staff.
-  - Control de acceso y matriculación.
-- **Gestión Académica ("Academic Ops")**:
-  - **Cohortes (`/admin/cohorts`)**: Administración del ciclo de vida de los grupos (Minors/Adults).
-  - **Materias (`/admin/subjects`)**: Catálogo maestro de asignaturas y créditos.
-- **Arquitecto de Recursos (`ResourceBuilder`)**: 
-  - **Constructor de Esquemas**: Creación dinámica de retos definiendo qué métricas capturar (Texto, Foto, Checkbox, GPS, Numérico).
-  - Centralización de la biblioteca de recursos reutilizables.
-- **Gestor de Oportunidades**: 
-  - Publicación y segmentación de ofertas (Becas, Empleo) para estudiantes.
-
-### 🚀 Futuros Desarrollos
-1. **CMS de Contenidos**:
-   - Editor visual para crear nuevos Retos/Misiones sin tocar código.
-   - Gestión de noticias o blog interno de la plataforma.
-2. **Auditoría y Logs**:
-   - Historial detallado de acciones sensibles (quién borró qué, quién validó a quién).
-3. **Módulo de Reportes**:
-   - Generación de reportes de impacto para donantes/directivos (PDF/Excel) con un clic.
 
 ---
 
@@ -139,3 +145,9 @@ El sistema utiliza **Row Level Security (RLS)** en Supabase para garantizar que:
 - Los **Estudiantes** solo vean su data y la de su cohorte inmediato.
 - Los **Partners** solo vean data curada y de alta calidad.
 - La información sensible (teléfonos, cédulas) está protegida a nivel de base de datos en vistas seguras (`public_profiles`).
+
+### Mejoras Recientes de Seguridad (v1.1)
+- **Prevención de Recursión**: Implementación de funciones `SECURITY DEFINER` (ej. `is_course_teacher`) para validar permisos complejos sin generar bucles infinitos en la base de datos.
+- **Políticas de Oportunidades**:
+  - **Admins**: Acceso total (CRUD).
+  - **Usuarios (Estudiante/Profe/Partner)**: Acceso de solo lectura restringido a oportunidades activas (`is_active = true`).

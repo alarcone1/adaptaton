@@ -85,7 +85,7 @@ export const StudentOpportunities = () => {
 
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 {opportunities.map(opp => (
-                    <Card key={opp.id} className="flex flex-col group hover:border-primary/30">
+                    <Card key={opp.id} className="flex flex-col group hover:border-primary/30 p-6">
                         <div className="flex justify-between items-start mb-4">
                             <div className="bg-primary/5 p-3 rounded-xl group-hover:bg-primary/10 transition-colors">
                                 <Building2 className="text-primary" size={24} />

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
-import { Layout } from '../../components/ui/Layout'
+
 import { Card } from '../../components/ui/Card'
 import { Button } from '../../components/ui/Button'
 import { Calendar, CheckCircle, Users, ArrowLeft, Plus, Trash2, ExternalLink, GraduationCap, Edit2, ClipboardList } from 'lucide-react'
@@ -756,56 +756,56 @@ export const TeacherCourseManager = () => {
         setCourse(data)
     }
 
-    if (!course) return <Layout><div>Cargando...</div></Layout>
+    if (!course) return <div>Cargando...</div>
 
     return (
-        <Layout>
-            <div className="max-w-7xl mx-auto p-4 md:p-8 text-left pb-20">
-                <button onClick={() => navigate('/teacher')} className="mb-6 flex items-center gap-2 text-gray-400 hover:text-primary transition-colors">
-                    <ArrowLeft size={18} /> Volver a Mis Cursos
-                </button>
 
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-4">
-                    <div>
-                        <div className="flex items-center gap-2 mb-1">
-                            <span className="bg-blue-100 text-blue-700 text-xs font-bold px-2 py-0.5 rounded uppercase">{course.cohort?.name}</span>
-                        </div>
-                        <h1 className="text-3xl font-black text-gray-800">{course.subject?.name}</h1>
-                        <p className="text-gray-500">{course.subject?.description}</p>
+        <div className="max-w-7xl mx-auto p-4 md:p-8 text-left pb-20">
+            <button onClick={() => navigate('/teacher')} className="mb-6 flex items-center gap-2 text-gray-400 hover:text-primary transition-colors">
+                <ArrowLeft size={18} /> Volver a Mis Cursos
+            </button>
+
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-4">
+                <div>
+                    <div className="flex items-center gap-2 mb-1">
+                        <span className="bg-blue-100 text-blue-700 text-xs font-bold px-2 py-0.5 rounded uppercase">{course.cohort?.name}</span>
                     </div>
-                </div>
-
-                {/* Tabs */}
-                <div className="flex gap-1 bg-gray-100/50 p-1 rounded-xl mb-8 w-fit overflow-x-auto">
-                    {[
-                        { id: 'planning', label: 'Planificación', icon: Calendar },
-                        { id: 'inbox', label: 'Sala de Validación', icon: CheckCircle },
-                        { id: 'gradebook', label: 'Calificaciones', icon: GraduationCap },
-                        { id: 'attendance', label: 'Asistencia', icon: ClipboardList },
-                        { id: 'students', label: 'Estudiantes', icon: Users }
-                    ].map(tab => (
-                        <button
-                            key={tab.id}
-                            onClick={() => setActiveTab(tab.id as any)}
-                            className={`flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${activeTab === tab.id
-                                ? 'bg-white text-primary shadow-sm'
-                                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'
-                                }`}
-                        >
-                            <tab.icon size={16} />
-                            {tab.label}
-                        </button>
-                    ))}
-                </div>
-
-                <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-                    {activeTab === 'planning' && <PlanningTab courseId={id!} cohortId={course.cohort_id} />}
-                    {activeTab === 'inbox' && <ValidationTab courseId={id!} />}
-                    {activeTab === 'gradebook' && <GradebookTab courseId={id!} />}
-                    {activeTab === 'attendance' && <AttendanceTab courseId={id!} />}
-                    {activeTab === 'students' && <StudentsTab courseId={id!} />}
+                    <h1 className="text-3xl font-black text-gray-800">{course.subject?.name}</h1>
+                    <p className="text-gray-500">{course.subject?.description}</p>
                 </div>
             </div>
-        </Layout>
+
+            {/* Tabs */}
+            <div className="flex gap-1 bg-gray-100/50 p-1 rounded-xl mb-8 w-fit overflow-x-auto">
+                {[
+                    { id: 'planning', label: 'Planificación', icon: Calendar },
+                    { id: 'inbox', label: 'Sala de Validación', icon: CheckCircle },
+                    { id: 'gradebook', label: 'Calificaciones', icon: GraduationCap },
+                    { id: 'attendance', label: 'Asistencia', icon: ClipboardList },
+                    { id: 'students', label: 'Estudiantes', icon: Users }
+                ].map(tab => (
+                    <button
+                        key={tab.id}
+                        onClick={() => setActiveTab(tab.id as any)}
+                        className={`flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${activeTab === tab.id
+                            ? 'bg-white text-primary shadow-sm'
+                            : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'
+                            }`}
+                    >
+                        <tab.icon size={16} />
+                        {tab.label}
+                    </button>
+                ))}
+            </div>
+
+            <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                {activeTab === 'planning' && <PlanningTab courseId={id!} cohortId={course.cohort_id} />}
+                {activeTab === 'inbox' && <ValidationTab courseId={id!} />}
+                {activeTab === 'gradebook' && <GradebookTab courseId={id!} />}
+                {activeTab === 'attendance' && <AttendanceTab courseId={id!} />}
+                {activeTab === 'students' && <StudentsTab courseId={id!} />}
+            </div>
+        </div>
+
     )
 }

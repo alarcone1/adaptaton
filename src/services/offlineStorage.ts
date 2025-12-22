@@ -5,8 +5,10 @@ export type OfflineEvidence = Omit<Database['public']['Tables']['evidences']['In
     localId: string
     // Store the file blob directly if available for offline mock
     mediaBlob?: Blob
-    status: 'draft' // offline items are always draft until synced
+    status: 'draft' | 'error' // offline items are always draft until synced, or error if failed
     timestamp: number
+    retryCount?: number
+    lastError?: string
 }
 
 const QUEUE_KEY = 'adaptaton_offline_queue'
@@ -26,6 +28,15 @@ export const removeFromQueue = async (localId: string) => {
     const queue = await getQueue()
     const newQueue = queue.filter(item => item.localId !== localId)
     await set(QUEUE_KEY, newQueue)
+}
+
+export const updateQueueItem = async (updatedItem: OfflineEvidence) => {
+    const queue = await getQueue()
+    const index = queue.findIndex(item => item.localId === updatedItem.localId)
+    if (index !== -1) {
+        queue[index] = updatedItem
+        await set(QUEUE_KEY, queue)
+    }
 }
 
 export const clearQueue = async () => {

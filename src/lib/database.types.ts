@@ -7,6 +7,11 @@ export type Json =
     | Json[]
 
 export type Database = {
+    // Allows to automatically instantiate createClient with right options
+    // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+    __InternalSupabase: {
+        PostgrestVersion: "14.1"
+    }
     public: {
         Tables: {
             challenges: {
@@ -374,23 +379,26 @@ export type Database = {
                 Row: {
                     created_at: string | null
                     id: string
-                    partner_id: string | null
-                    status: Database["public"]["Enums"]["lead_status"] | null
-                    student_id: string | null
+                    partner_id: string
+                    status: Database["public"]["Enums"]["lead_status"]
+                    student_id: string
+                    evidence_id: string | null
                 }
                 Insert: {
                     created_at?: string | null
                     id?: string
-                    partner_id?: string | null
-                    status?: Database["public"]["Enums"]["lead_status"] | null
-                    student_id?: string | null
+                    partner_id: string
+                    status?: Database["public"]["Enums"]["lead_status"]
+                    student_id: string
+                    evidence_id?: string | null
                 }
                 Update: {
                     created_at?: string | null
                     id?: string
-                    partner_id?: string | null
-                    status?: Database["public"]["Enums"]["lead_status"] | null
-                    student_id?: string | null
+                    partner_id?: string
+                    status?: Database["public"]["Enums"]["lead_status"]
+                    student_id?: string
+                    evidence_id?: string | null
                 }
                 Relationships: [
                     {
@@ -406,10 +414,17 @@ export type Database = {
                         isOneToOne: false
                         referencedRelation: "profiles"
                         referencedColumns: ["id"]
+                    },
+                    {
+                        foreignKeyName: "leads_evidence_id_fkey"
+                        columns: ["evidence_id"]
+                        isOneToOne: false
+                        referencedRelation: "evidences"
+                        referencedColumns: ["id"]
                     }
                 ]
             }
-            Opportunities: {
+            opportunities: {
                 Row: {
                     created_at: string | null
                     description: string | null
@@ -559,7 +574,12 @@ export type Database = {
             [_ in never]: never
         }
         Functions: {
-            [_ in never]: never
+            is_course_teacher: {
+                Args: {
+                    course_uuid: string
+                }
+                Returns: boolean
+            }
         }
         Enums: {
             cohort_type: "minor" | "adult"
@@ -673,3 +693,15 @@ export type CompositeTypes<
     : PublicCompositeTypeNameOrOptions extends keyof PublicSchema["CompositeTypes"]
     ? PublicSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
     : never
+
+export const Constants = {
+    public: {
+        Enums: {
+            cohort_type: ["minor", "adult"],
+            enrollment_status: ["active", "completed", "failed", "dropped"],
+            evidence_status: ["draft", "submitted", "validated", "rejected"],
+            lead_status: ["pending", "contacted", "closed"],
+            user_role: ["student", "teacher", "partner", "admin"],
+        },
+    },
+} as const

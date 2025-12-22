@@ -1,120 +1,164 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabase'
 import type { Database } from '../../lib/database.types'
-import { PageHeader } from '../../components/ui/PageHeader'
-import { Card } from '../../components/ui/Card'
-import { Button } from '../../components/ui/Button'
-import { Layout } from '../../components/ui/Layout'
-import { Search, Mail, Sparkles } from 'lucide-react'
+import { Search, MapPin, Award } from 'lucide-react'
+import { EvidenceDetailModal } from './EvidenceDetailModal'
 
-type Evidence = Database['public']['Tables']['evidences']['Row'] & {
-    profiles: { full_name: string | null } | null
-    challenges: { title: string | null } | null
+type EvidenceWithProfile = Database['public']['Tables']['evidences']['Row'] & {
+    profiles: Database['public']['Tables']['profiles']['Row'] | null
+    resource_library: { title: string } | null
 }
 
 export const PartnerShowcase = () => {
-    const [evidences, setEvidences] = useState<Evidence[]>([])
-    const [searchTerm, setSearchTerm] = useState('')
+    const [evidences, setEvidences] = useState<EvidenceWithProfile[]>([])
     const [loading, setLoading] = useState(true)
+    const [selectedEvidence, setSelectedEvidence] = useState<EvidenceWithProfile | null>(null)
+    const [filterText, setFilterText] = useState('')
 
     useEffect(() => {
         fetchShowcase()
     }, [])
 
     const fetchShowcase = async () => {
-        const { data } = await supabase
-            .from('evidences')
-            .select('*, profiles(full_name), challenges(title)')
-            .eq('status', 'validated')
-            .order('is_highlighted', { ascending: false })
+        setLoading(true)
+        try {
+            const { data, error } = await supabase
+                .from('evidences')
+                .select(`
+                    *,
+                    profiles:user_id (full_name, avatar_url, bio, cohort_id),
+                    course_activities (
+                        resource_library ( title )
+                    )
+                `)
+                .eq('status', 'validated')
+                .eq('is_highlighted', true)
+                .order('created_at', { ascending: false })
 
-        if (data) setEvidences(data as any)
-        setLoading(false)
+            if (error) throw error
+
+            const formattedData = data.map((item: any) => ({
+                ...item,
+                resource_title: item.course_activities?.resource_library?.title || 'Reto General'
+            }))
+
+            setEvidences(formattedData)
+        } catch (error) {
+            console.error('Error fetching showcase:', error)
+        } finally {
+            setLoading(false)
+        }
     }
 
-    const filtered = evidences.filter(e =>
-        e.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        e.challenges?.title?.toLowerCase().includes(searchTerm.toLowerCase())
-    )
-
-    const handleContact = (studentName: string) => {
-        alert(`Iniciando contacto con el talento: ${studentName}.`)
-    }
+    const filteredEvidences = evidences.filter(ev => {
+        const text = filterText.toLowerCase()
+        const title = (ev as any).resource_title?.toLowerCase() || ''
+        const studentName = ev.profiles?.full_name?.toLowerCase() || ''
+        return title.includes(text) || studentName.includes(text)
+    })
 
     return (
-        <Layout>
-            <div className="p-4 md:p-8 space-y-8 max-w-7xl mx-auto">
-                <PageHeader title="Talento de Impacto" subtitle="Explora los proyectos destacados de nuestros estudiantes." role="Aliado" roleColor="gold" />
+        <div>
+            <div className="mb-8">
+                <h1 className="text-3xl font-bold text-gray-900">La Vitrina de Talento</h1>
+                <p className="text-gray-500 mt-2">Descubre a los jóvenes que están transformando su comunidad.</p>
+            </div>
 
-                {/* Search Bar */}
-                <div className="relative max-w-xl mx-auto mb-10">
-                    <div className="absolute inset-x-0 -bottom-4 h-4 bg-black/10 blur-xl rounded-[50%]"></div>
-                    <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-primary/50" size={24} />
+            {/* Filters */}
+            <div className="flex gap-4 mb-8">
+                <div className="relative flex-1 max-w-md">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
                     <input
                         type="text"
-                        placeholder="Buscar por proyecto, estudiante o tema..."
-                        className="w-full pl-16 pr-6 py-5 rounded-full border-none shadow-2xl shadow-primary/10 bg-white/90 backdrop-blur-xl focus:ring-4 focus:ring-secondary/20 text-lg transition-all outline-none placeholder:text-gray-400 font-medium"
-                        value={searchTerm}
-                        onChange={e => setSearchTerm(e.target.value)}
+                        placeholder="Buscar por reto o nombre..."
+                        className="w-full pl-10 pr-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                        value={filterText}
+                        onChange={(e) => setFilterText(e.target.value)}
                     />
                 </div>
-
-                {loading ? <p className="text-center text-secondary animate-pulse mt-12">Cargando galería...</p> : (
-                    <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                        {filtered.map(evidence => (
-                            <Card
-                                key={evidence.id}
-                                luxury={evidence.is_highlighted || false}
-                                className={`group flex flex-col h-full hover:-translate-y-2 transition-transform duration-500`}
-                            >
-                                {/* Image with overlay */}
-                                <div className="relative overflow-hidden rounded-xl mb-5 h-64 shadow-inner">
-                                    {evidence.media_url ? (
-                                        <img
-                                            src={evidence.media_url}
-                                            className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
-                                            alt="Evidence"
-                                        />
-                                    ) : (
-                                        <div className="flex items-center justify-center h-full bg-gray-100 text-gray-300">Sin Imagen</div>
-                                    )}
-
-                                    {/* Gradient Overlay on Hover */}
-                                    <div className="absolute inset-0 bg-gradient-to-t from-primary/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
-                                        <p className="text-white font-bold text-sm transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500 delay-100">
-                                            {evidence.challenges?.title}
-                                        </p>
-                                    </div>
-
-                                    {evidence.is_highlighted && (
-                                        <span className="absolute top-3 right-3 bg-white/90 backdrop-blur text-accent-gold text-xs font-bold px-3 py-1.5 rounded-full shadow-lg flex items-center gap-1">
-                                            <Sparkles size={12} fill="#EBC04C" /> Destacado
-                                        </span>
-                                    )}
-                                </div>
-
-                                <div className="flex flex-col flex-grow">
-                                    <div className="flex justify-between items-start mb-2">
-                                        <p className="text-xs font-bold text-secondary uppercase tracking-widest">{evidence.profiles?.full_name || 'Estudiante'}</p>
-                                    </div>
-
-                                    <h3 className="font-bold text-lg text-primary mb-3 leading-tight line-clamp-2">{evidence.challenges?.title}</h3>
-                                    <p className="text-text-secondary text-sm line-clamp-3 mb-6 flex-grow leading-relaxed">"{evidence.description}"</p>
-
-                                    <div className="mt-auto pt-4 border-t border-gray-100/50 flex items-center justify-between">
-                                        <div className="text-xs bg-secondary/10 text-secondary px-3 py-1 rounded-full font-bold">
-                                            Impacto: {(evidence.impact_data as any)?.value}
-                                        </div>
-                                        <Button size="sm" variant="outline" onClick={() => handleContact(evidence.profiles?.full_name || '')} className="!rounded-lg !py-1 !px-3 !text-xs">
-                                            <Mail size={14} className="mr-1" /> Contactar
-                                        </Button>
-                                    </div>
-                                </div>
-                            </Card>
-                        ))}
-                    </div>
-                )}
             </div>
-        </Layout>
+
+            {/* Grid */}
+            {loading ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {[1, 2, 3, 4, 5, 6].map(i => (
+                        <div key={i} className="bg-white rounded-2xl h-80 animate-pulse border border-gray-100"></div>
+                    ))}
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {filteredEvidences.map((evidence) => (
+                        <div
+                            key={evidence.id}
+                            onClick={() => setSelectedEvidence(evidence)}
+                            className="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-xl transition-all cursor-pointer relative"
+                        >
+                            {/* Card Image */}
+                            <div className="aspect-[4/3] bg-gray-100 relative overflow-hidden">
+                                {evidence.media_url ? (
+                                    <img
+                                        src={evidence.media_url}
+                                        alt="Evidencia"
+                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                    />
+                                ) : (
+                                    <div className="w-full h-full flex items-center justify-center text-gray-400">
+                                        Sin imagen
+                                    </div>
+                                )}
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-6">
+                                    <span className="text-white font-medium text-sm">Ver Detalle Completo</span>
+                                </div>
+                            </div>
+
+                            {/* Card Content */}
+                            <div className="p-5">
+                                <div className="flex items-start justify-between mb-3">
+                                    <span className="bg-secondary/10 text-secondary text-xs font-bold px-2 py-1 rounded-md uppercase tracking-wide">
+                                        {(evidence as any).resource_title}
+                                    </span>
+                                    <div className="flex -space-x-1">
+                                        <div className="w-6 h-6 rounded-full bg-yellow-100 border border-white flex items-center justify-center text-yellow-600" title="Destacado">
+                                            <Award size={12} />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center gap-3 mt-4 pt-4 border-t border-gray-50">
+                                    <div className="w-8 h-8 rounded-full bg-gray-200 overflow-hidden">
+                                        {evidence.profiles?.avatar_url ? (
+                                            <img src={evidence.profiles.avatar_url} className="w-full h-full object-cover" />
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center bg-primary text-white text-xs">{evidence.profiles?.full_name?.charAt(0)}</div>
+                                        )}
+                                    </div>
+                                    <div className="flex-1">
+                                        <p className="text-sm font-bold text-gray-900 truncate">{evidence.profiles?.full_name}</p>
+                                        <div className="flex items-center text-gray-500 text-xs">
+                                            <MapPin size={10} className="mr-1" />
+                                            Cartagena, Colombia
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
+
+            {filteredEvidences.length === 0 && !loading && (
+                <div className="text-center py-20 text-gray-500 bg-white rounded-3xl border border-dashed border-gray-200">
+                    <p>No se encontraron talentos con estos criterios.</p>
+                </div>
+            )}
+
+            {/* Detail Modal */}
+            {selectedEvidence && (
+                <EvidenceDetailModal
+                    evidence={selectedEvidence}
+                    onClose={() => setSelectedEvidence(null)}
+                />
+            )}
+        </div>
     )
 }
