@@ -5,6 +5,7 @@ import { supabase } from '../../../lib/supabase'
 import { Card } from '../../../components/ui/Card'
 import { Button } from '../../../components/ui/Button'
 import { Users, UserPlus, LogOut, ArrowLeft, BookOpen, Plus, Calendar, X } from 'lucide-react'
+import { Modal, ModalFooter } from '../../../components/ui/Modal'
 
 export const CohortDetail = () => {
     const { id } = useParams()
@@ -195,7 +196,7 @@ export const CohortDetail = () => {
                             <Card key={course.id} className="p-6 hover:shadow-md transition-shadow">
                                 <div className="flex justify-between items-start">
                                     <div>
-                                        <h3 className="text-lg font-bold text-gray-800">{course.subject?.name}</h3>
+                                        <h3 className="text-lg font-bold text-[#1B1B3F]">{course.subject?.name}</h3>
                                         <p className="text-gray-500 text-sm">Prof. {course.teacher?.full_name}</p>
                                     </div>
                                     <div className="flex flex-col items-end gap-2">
@@ -246,7 +247,7 @@ export const CohortDetail = () => {
                                             {student.full_name?.[0]}
                                         </div>
                                         <div>
-                                            <p className="font-bold text-sm text-gray-800">{student.full_name}</p>
+                                            <p className="font-bold text-sm text-[#1B1B3F]">{student.full_name}</p>
                                             <p className="text-xs text-gray-400">{student.email}</p>
                                         </div>
                                     </div>
@@ -269,92 +270,94 @@ export const CohortDetail = () => {
 
             {/* MODALS */}
             {/* 1. Enroll Student Modal */}
-            {showEnrollModal && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-xl shadow-xl w-full max-w-md max-h-[80vh] flex flex-col">
-                        <div className="p-4 border-b flex justify-between items-center">
-                            <h3 className="font-bold">Matricular Estudiante</h3>
-                            <button onClick={() => setShowEnrollModal(false)}><X size={20} /></button>
+            <Modal
+                isOpen={showEnrollModal}
+                onClose={() => setShowEnrollModal(false)}
+                title="Matricular Estudiante"
+                description="Selecciona un estudiante para asignarlo a esta cohorte."
+                mode="edit"
+            >
+                <div className="overflow-y-auto max-h-[60vh] -mx-2 px-2">
+                    {availableStudents.map(student => (
+                        <div key={student.id} className="flex justify-between items-center p-3 hover:bg-gray-50 rounded-lg border-b border-gray-50 last:border-0">
+                            <span className="font-medium text-gray-700">{student.full_name}</span>
+                            <Button size="sm" onClick={() => enrollStudent(student.id)}>
+                                <UserPlus size={14} className="mr-1" /> Asignar
+                            </Button>
                         </div>
-                        <div className="overflow-y-auto flex-1 p-2">
-                            {availableStudents.map(student => (
-                                <div key={student.id} className="flex justify-between items-center p-3 hover:bg-gray-50 rounded-lg">
-                                    <span>{student.full_name}</span>
-                                    <Button size="sm" onClick={() => enrollStudent(student.id)}>
-                                        <UserPlus size={14} />
-                                    </Button>
-                                </div>
-                            ))}
-                            {availableStudents.length === 0 && (
-                                <p className="text-center p-4 text-gray-500">No hay estudiantes disponibles.</p>
-                            )}
-                        </div>
-                    </div>
+                    ))}
+                    {availableStudents.length === 0 && (
+                        <p className="text-center p-4 text-gray-500">No hay estudiantes disponibles.</p>
+                    )}
                 </div>
-            )}
+                <div className="flex justify-end pt-4 border-t border-gray-100 mt-4">
+                    <Button variant="outline" onClick={() => setShowEnrollModal(false)}>Cerrar</Button>
+                </div>
+            </Modal>
 
             {/* 2. Add Course Modal */}
-            {showCourseModal && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 animate-in fade-in">
-                    <div className="bg-white rounded-xl shadow-xl w-full max-w-lg p-6">
-                        <h3 className="text-xl font-bold mb-6">Asignar Nuevo Curso</h3>
+            <Modal
+                isOpen={showCourseModal}
+                onClose={() => setShowCourseModal(false)}
+                title="Asignar Nuevo Curso"
+                description="Vincula una materia y un docente a esta cohorte."
+                mode="create"
+            >
+                <div className="space-y-4">
+                    <div>
+                        <label className="block text-xs font-bold text-[#1B1B3F] uppercase mb-1.5 tracking-wide">Materia</label>
+                        <select
+                            className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none bg-white"
+                            value={newCourse.subject_id}
+                            onChange={e => setNewCourse({ ...newCourse, subject_id: e.target.value })}
+                        >
+                            <option value="">Selecciona materia...</option>
+                            {subjects.map(s => <option key={s.id} value={s.id}>{s.name} ({s.credits} CR)</option>)}
+                        </select>
+                    </div>
 
-                        <div className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1">Materia</label>
-                                <select
-                                    className="w-full p-2 border rounded-lg"
-                                    value={newCourse.subject_id}
-                                    onChange={e => setNewCourse({ ...newCourse, subject_id: e.target.value })}
-                                >
-                                    <option value="">Selecciona materia...</option>
-                                    {subjects.map(s => <option key={s.id} value={s.id}>{s.name} ({s.credits} CR)</option>)}
-                                </select>
-                            </div>
+                    <div>
+                        <label className="block text-xs font-bold text-[#1B1B3F] uppercase mb-1.5 tracking-wide">Docente Responsable</label>
+                        <select
+                            className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none bg-white"
+                            value={newCourse.teacher_id}
+                            onChange={e => setNewCourse({ ...newCourse, teacher_id: e.target.value })}
+                        >
+                            <option value="">Selecciona docente...</option>
+                            {teachers.map(t => <option key={t.id} value={t.id}>{t.full_name}</option>)}
+                        </select>
+                    </div>
 
-                            <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1">Docente Responsable</label>
-                                <select
-                                    className="w-full p-2 border rounded-lg"
-                                    value={newCourse.teacher_id}
-                                    onChange={e => setNewCourse({ ...newCourse, teacher_id: e.target.value })}
-                                >
-                                    <option value="">Selecciona docente...</option>
-                                    {teachers.map(t => <option key={t.id} value={t.id}>{t.full_name}</option>)}
-                                </select>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-sm font-bold text-gray-700 mb-1">Inicio (Opcional)</label>
-                                    <input
-                                        type="date"
-                                        className="w-full p-2 border rounded-lg"
-                                        value={newCourse.start_date}
-                                        onChange={e => setNewCourse({ ...newCourse, start_date: e.target.value })}
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-bold text-gray-700 mb-1">Fin (Opcional)</label>
-                                    <input
-                                        type="date"
-                                        className="w-full p-2 border rounded-lg"
-                                        value={newCourse.end_date}
-                                        onChange={e => setNewCourse({ ...newCourse, end_date: e.target.value })}
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="flex justify-end gap-3 mt-6">
-                                <Button variant="secondary" onClick={() => setShowCourseModal(false)}>Cancelar</Button>
-                                <Button onClick={handleCreateCourse} disabled={!newCourse.subject_id || !newCourse.teacher_id}>
-                                    Crear Curso
-                                </Button>
-                            </div>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-xs font-bold text-[#1B1B3F] uppercase mb-1.5 tracking-wide">Inicio (Opcional)</label>
+                            <input
+                                type="date"
+                                className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none"
+                                value={newCourse.start_date}
+                                onChange={e => setNewCourse({ ...newCourse, start_date: e.target.value })}
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-xs font-bold text-[#1B1B3F] uppercase mb-1.5 tracking-wide">Fin (Opcional)</label>
+                            <input
+                                type="date"
+                                className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none"
+                                value={newCourse.end_date}
+                                onChange={e => setNewCourse({ ...newCourse, end_date: e.target.value })}
+                            />
                         </div>
                     </div>
+
+                    <ModalFooter
+                        onCancel={() => setShowCourseModal(false)}
+                        onSave={handleCreateCourse}
+                        saveType="button"
+                        saveLabel="Crear Curso"
+                        isSaveDisabled={!newCourse.subject_id || !newCourse.teacher_id}
+                    />
                 </div>
-            )}
+            </Modal>
         </div>
 
     )

@@ -8,7 +8,7 @@ export default {
     extend: {
       colors: {
         primary: {
-          DEFAULT: '#4A2574', // Morado Profundo (Institucional)
+          DEFAULT: '#4B3179', // Morado Profundo (Institucional - Updated)
           light: '#6A4594',
           dark: '#2A1050',
         },

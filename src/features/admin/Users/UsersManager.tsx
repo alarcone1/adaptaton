@@ -5,8 +5,8 @@ import { PageHeader } from '../../../components/ui/PageHeader'
 import { Card } from '../../../components/ui/Card'
 import { Button } from '../../../components/ui/Button'
 import { Badge } from '../../../components/ui/Badge'
-import { Layout } from '../../../components/ui/Layout'
 import { Trash2, Edit2, Plus, MoreVertical, Mail, Filter, Layers } from 'lucide-react'
+import { Modal, ModalFooter } from '../../../components/ui/Modal'
 import { CohortAssignmentModal } from './CohortAssignmentModal'
 
 type Profile = any // Using any to bypass strict type check on 'profiles' generic for now
@@ -205,7 +205,7 @@ export const UsersManager = () => {
     return (
 
         <div className="p-4 md:p-8 max-w-7xl mx-auto min-h-screen space-y-6" onClick={() => setActiveMenu(null)}>
-            <PageHeader title="Gestión de Usuarios" subtitle="Administra estudiantes, docentes y más." role="Admin" roleColor="red">
+            <PageHeader title="Gestión de Usuarios" subtitle="Administra estudiantes, docentes y más.">
                 <Button onClick={() => { setEditingId(null); resetForm(); setShowUserForm(true) }}>
                     <Plus size={18} className="mr-2" /> Nuevo Usuario
                 </Button>
@@ -254,17 +254,15 @@ export const UsersManager = () => {
                     {users.map(user => (
                         <Card
                             key={user.id}
-                            className={`p-4 flex items-center justify-between hover:bg-gray-50 transition-colors ${activeMenu === user.id ? 'relative z-20 ring-2 ring-primary/20' : ''}`}
+                            className={`p-4 flex items-center justify-between hover:shadow-lg transition-all border-l-4 border-l-[#66AD9D] hover:border-[#66AD9D] cursor-pointer group ${activeMenu === user.id ? 'relative z-20 ring-2 ring-primary/20' : ''}`}
+                            onClick={() => startEdit(user)}
                         >
                             <div className="flex items-center gap-4">
-                                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-white ${user.role === 'admin' ? 'bg-red-500' :
-                                    user.role === 'teacher' ? 'bg-purple-500' :
-                                        user.role === 'partner' ? 'bg-orange-500' : 'bg-blue-500'
-                                    }`}>
+                                <div className="w-12 h-12 rounded-xl flex items-center justify-center font-bold transition-all duration-300 bg-[#66AD9D]/10 text-[#66AD9D] group-hover:bg-[#66AD9D] group-hover:text-white">
                                     {user.full_name?.[0]?.toUpperCase() || 'U'}
                                 </div>
                                 <div>
-                                    <p className="font-bold text-gray-800">{user.full_name}</p>
+                                    <p className="font-bold text-lg text-[#1B1B3F]">{user.full_name}</p>
                                     <p className="text-sm text-gray-500">{user.email}</p>
                                     <div className="flex gap-2 mt-1">
                                         <Badge variant="gray" className="text-xs uppercase">{user.role}</Badge>
@@ -329,94 +327,102 @@ export const UsersManager = () => {
             )}
 
             {/* Create/Edit User Modal */}
-            {showUserForm && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-                    <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
-                        <h2 className="text-xl font-bold mb-4">{editingId ? 'Editar Usuario' : 'Nuevo Usuario'}</h2>
-                        {formError && <div className="bg-red-50 text-red-600 p-3 rounded mb-4 text-sm">{formError}</div>}
+            <Modal
+                isOpen={showUserForm}
+                onClose={() => setShowUserForm(false)}
+                title={editingId ? 'Editar Usuario' : 'Nuevo Usuario'}
+                description={editingId ? 'Modifica los datos del usuario existente.' : 'Registra un nuevo usuario en la plataforma.'}
+                mode={editingId ? 'edit' : 'create'}
+            >
+                {formError && <div className="bg-red-50 text-red-600 p-3 rounded mb-4 text-sm font-medium">{formError}</div>}
 
-                        <form onSubmit={handleCreateUser} className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Nombre Completo</label>
-                                <input
-                                    required className="w-full p-2 border rounded-lg"
-                                    value={newUser.names} onChange={e => setNewUser({ ...newUser, names: e.target.value })}
-                                />
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                                    <input
-                                        required type="email" className="w-full p-2 border rounded-lg disabled:opacity-50"
-                                        value={newUser.email} onChange={e => setNewUser({ ...newUser, email: e.target.value })}
-                                        disabled={!!editingId}
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Cédula</label>
-                                    <input
-                                        className="w-full p-2 border rounded-lg"
-                                        value={newUser.cedula} onChange={e => setNewUser({ ...newUser, cedula: e.target.value })}
-                                    />
-                                </div>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
-                                <input
-                                    className="w-full p-2 border rounded-lg"
-                                    value={newUser.phone} onChange={e => setNewUser({ ...newUser, phone: e.target.value })}
-                                />
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Rol</label>
-                                    <select
-                                        className="w-full p-2 border rounded-lg"
-                                        value={newUser.role}
-                                        onChange={e => setNewUser({ ...newUser, role: e.target.value as any })}
-                                    >
-                                        <option value="student">Estudiante</option>
-                                        <option value="teacher">Docente</option>
-                                        <option value="partner">Aliado</option>
-                                        <option value="admin">Administrador</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Cohorte</label>
-                                    <select
-                                        className="w-full p-2 border rounded-lg disabled:bg-gray-100 disabled:text-gray-400"
-                                        value={newUser.cohort_id}
-                                        onChange={e => setNewUser({ ...newUser, cohort_id: e.target.value })}
-                                        disabled={newUser.role !== 'student'}
-                                    >
-                                        <option value="">Sin Cohorte</option>
-                                        {cohorts.map(c => (
-                                            <option key={c.id} value={c.id}>{c.name}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                            </div>
-
-                            {!editingId && (
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Contraseña Temporal</label>
-                                    <input
-                                        required type="password" className="w-full p-2 border rounded-lg"
-                                        value={newUser.password} onChange={e => setNewUser({ ...newUser, password: e.target.value })}
-                                        placeholder="Mínimo 6 caracteres"
-                                    />
-                                </div>
-                            )}
-
-                            <div className="flex gap-3 pt-4">
-                                <Button variant="outline" className="flex-1" onClick={() => setShowUserForm(false)} type="button">Cancelar</Button>
-                                <Button className="flex-1" type="submit">Guardar</Button>
-                            </div>
-                        </form>
+                <form onSubmit={handleCreateUser} className="space-y-4">
+                    <div>
+                        <label className="block text-sm font-bold text-[#1B1B3F] mb-1.5 uppercase tracking-wide text-xs">Nombre Completo</label>
+                        <input
+                            required className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                            value={newUser.names} onChange={e => setNewUser({ ...newUser, names: e.target.value })}
+                            placeholder="Ej: Juan Pérez"
+                        />
                     </div>
-                </div>
-            )}
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-sm font-bold text-[#1B1B3F] mb-1.5 uppercase tracking-wide text-xs">Email</label>
+                            <input
+                                required type="email" className="w-full p-3 border border-gray-200 rounded-xl disabled:bg-gray-50 disabled:text-gray-400 outline-none"
+                                value={newUser.email} onChange={e => setNewUser({ ...newUser, email: e.target.value })}
+                                disabled={!!editingId}
+                                placeholder="correo@ejemplo.com"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-bold text-[#1B1B3F] mb-1.5 uppercase tracking-wide text-xs">Cédula</label>
+                            <input
+                                className="w-full p-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary/20"
+                                value={newUser.cedula} onChange={e => setNewUser({ ...newUser, cedula: e.target.value })}
+                                placeholder="1234567890"
+                            />
+                        </div>
+                    </div>
+                    <div>
+                        <label className="block text-sm font-bold text-[#1B1B3F] mb-1.5 uppercase tracking-wide text-xs">Teléfono</label>
+                        <input
+                            className="w-full p-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary/20"
+                            value={newUser.phone} onChange={e => setNewUser({ ...newUser, phone: e.target.value })}
+                            placeholder="+57 300 123 4567"
+                        />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-sm font-bold text-[#1B1B3F] mb-1.5 uppercase tracking-wide text-xs">Rol</label>
+                            <select
+                                className="w-full p-3 border border-gray-200 rounded-xl outline-none bg-white focus:ring-2 focus:ring-primary/20"
+                                value={newUser.role}
+                                onChange={e => setNewUser({ ...newUser, role: e.target.value as any })}
+                            >
+                                <option value="student">Estudiante</option>
+                                <option value="teacher">Docente</option>
+                                <option value="partner">Aliado</option>
+                                <option value="admin">Administrador</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label className="block text-sm font-bold text-[#1B1B3F] mb-1.5 uppercase tracking-wide text-xs">Cohorte</label>
+                            <select
+                                className="w-full p-3 border border-gray-200 rounded-xl outline-none bg-white disabled:bg-gray-50 focus:ring-2 focus:ring-primary/20"
+                                value={newUser.cohort_id}
+                                onChange={e => setNewUser({ ...newUser, cohort_id: e.target.value })}
+                                disabled={newUser.role !== 'student'}
+                            >
+                                <option value="">Sin Cohorte</option>
+                                {cohorts.map(c => (
+                                    <option key={c.id} value={c.id}>{c.name}</option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
+
+                    {!editingId && (
+                        <div>
+                            <label className="block text-sm font-bold text-[#1B1B3F] mb-1.5 uppercase tracking-wide text-xs">Contraseña Temporal</label>
+                            <input
+                                required type="password" className="w-full p-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary/20"
+                                value={newUser.password} onChange={e => setNewUser({ ...newUser, password: e.target.value })}
+                                placeholder="Mínimo 6 caracteres"
+                            />
+                        </div>
+                    )}
+
+                    <ModalFooter
+                        onCancel={() => setShowUserForm(false)}
+                        onSave={() => null} // Form submit handles actual logic
+                        saveType="submit"
+                        saveLabel="Guardar Usuario"
+                        isSaveDisabled={!newUser.email || !newUser.names || (!editingId && !newUser.password)}
+                    />
+                </form>
+            </Modal>
 
             <ConfirmModal
                 isOpen={showDeleteModal}

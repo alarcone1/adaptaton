@@ -21,7 +21,7 @@ export const Button = ({
 
     // Updated 'Frescura Caribeña' gradients
     const variants = {
-        primary: "bg-gradient-to-r from-secondary to-blue-600 text-white shadow-lg hover:shadow-xl hover:scale-105",
+        primary: "bg-gradient-to-r from-secondary to-primary text-white shadow-lg hover:shadow-xl hover:scale-105",
         secondary: "bg-white text-secondary border border-secondary hover:bg-secondary/5 shadow-sm",
         outline: "border-2 border-primary text-primary hover:bg-primary/5",
         danger: "bg-red-50 text-red-600 border border-red-200 hover:bg-red-100"

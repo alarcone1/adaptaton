@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../../../lib/supabase'
-import { Button } from '../../../components/ui/Button'
-import { X } from 'lucide-react'
+import { Modal, ModalFooter } from '../../../components/ui/Modal'
 
 interface CohortAssignmentModalProps {
     isOpen: boolean
@@ -76,52 +75,45 @@ export const CohortAssignmentModal = ({ isOpen, onClose, userId, userName, userR
         }
     }
 
-    if (!isOpen) return null
-
     return (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-[60]">
-            <div className="bg-white rounded-xl shadow-2xl w-full max-w-md flex flex-col max-h-[80vh]">
-                <div className="p-4 border-b flex justify-between items-center">
-                    <div>
-                        <h2 className="text-lg font-bold">Gestionar Acceso a Cohortes</h2>
-                        <p className="text-sm text-gray-500">{userName} ({userRole})</p>
+        <Modal
+            isOpen={isOpen}
+            onClose={onClose}
+            title="Gestionar Acceso a Cohortes"
+            description={`${userName} (${userRole})`}
+            mode="edit"
+        >
+            <div className="space-y-4">
+                {loading ? (
+                    <div className="text-center py-8 text-gray-400">Cargando cohortes...</div>
+                ) : (
+                    <div className="space-y-2 max-h-[60vh] overflow-y-auto px-1">
+                        {cohorts.map(cohort => (
+                            <label key={cohort.id} className="flex items-center gap-3 p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
+                                <input
+                                    type="checkbox"
+                                    className="w-5 h-5 rounded border-gray-300 text-primary focus:ring-primary accent-[#4B3179]"
+                                    checked={selectedCohortIds.includes(cohort.id)}
+                                    onChange={() => toggleCohort(cohort.id)}
+                                />
+                                <div className="flex-1">
+                                    <div className="font-medium text-gray-800">{cohort.name}</div>
+                                    <div className="text-xs text-gray-500 uppercase">{cohort.type}</div>
+                                </div>
+                            </label>
+                        ))}
+                        {cohorts.length === 0 && <p className="text-center text-gray-400">No hay cohortes disponibles.</p>}
                     </div>
-                    <button onClick={onClose} className="p-1 hover:bg-gray-100 rounded">
-                        <X size={20} />
-                    </button>
-                </div>
+                )}
 
-                <div className="p-4 overflow-y-auto flex-1">
-                    {loading ? (
-                        <div className="text-center py-8 text-gray-400">Cargando cohortes...</div>
-                    ) : (
-                        <div className="space-y-2">
-                            {cohorts.map(cohort => (
-                                <label key={cohort.id} className="flex items-center gap-3 p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
-                                    <input
-                                        type="checkbox"
-                                        className="w-5 h-5 rounded border-gray-300 text-primary focus:ring-primary"
-                                        checked={selectedCohortIds.includes(cohort.id)}
-                                        onChange={() => toggleCohort(cohort.id)}
-                                    />
-                                    <div className="flex-1">
-                                        <div className="font-medium text-gray-800">{cohort.name}</div>
-                                        <div className="text-xs text-gray-500 uppercase">{cohort.type}</div>
-                                    </div>
-                                </label>
-                            ))}
-                            {cohorts.length === 0 && <p className="text-center text-gray-400">No hay cohortes disponibles.</p>}
-                        </div>
-                    )}
-                </div>
-
-                <div className="p-4 border-t flex justify-end gap-2 bg-gray-50 rounded-b-xl">
-                    <Button variant="outline" onClick={onClose}>Cancelar</Button>
-                    <Button onClick={handleSave} disabled={saving || loading}>
-                        {saving ? 'Guardando...' : 'Guardar Cambios'}
-                    </Button>
-                </div>
+                <ModalFooter
+                    onCancel={onClose}
+                    onSave={handleSave}
+                    saveType="button"
+                    saveLabel={saving ? 'Guardando...' : 'Guardar Cambios'}
+                    isSaveDisabled={saving || loading}
+                />
             </div>
-        </div>
+        </Modal>
     )
 }

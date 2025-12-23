@@ -98,8 +98,6 @@ export const ResourceBuilder = () => {
             <PageHeader
                 title={id ? 'Editar Recurso' : 'Nuevo Recurso'}
                 subtitle="Diseña la estructura del reto y los datos a recolectar."
-                role="Architect"
-                roleColor="purple"
             />
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-6">

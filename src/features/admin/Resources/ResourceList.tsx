@@ -7,7 +7,6 @@ import { useNavigate } from 'react-router-dom'
 import { PageHeader } from '../../../components/ui/PageHeader'
 import { ConfirmModal } from '../../../components/ConfirmModal'
 
-import { Layout } from '../../../components/ui/Layout'
 
 export const ResourceList = () => {
     const navigate = useNavigate()
@@ -40,9 +39,11 @@ export const ResourceList = () => {
             <PageHeader
                 title="Biblioteca de Recursos"
                 subtitle="Gestiona los retos y herramientas educativas."
-                role="Architect"
-                roleColor="purple"
-            />
+            >
+                <Button onClick={() => navigate('/admin/resources/new')}>
+                    <Plus size={18} /> Nuevo Recurso
+                </Button>
+            </PageHeader>
 
             <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8">
                 <div className="relative w-full md:w-96">
@@ -54,9 +55,6 @@ export const ResourceList = () => {
                         onChange={e => setSearchTerm(e.target.value)}
                     />
                 </div>
-                <Button onClick={() => navigate('/admin/resources/new')}>
-                    <Plus size={18} /> Nuevo Recurso
-                </Button>
             </div>
 
             {loading ? (
@@ -64,9 +62,9 @@ export const ResourceList = () => {
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {filtered.map(resource => (
-                        <Card key={resource.id} className="group hover:border-primary/30 transition-all cursor-pointer p-6" onClick={() => navigate(`/admin/resources/${resource.id}`)}>
+                        <Card key={resource.id} className="p-6 hover:shadow-lg transition-all border-l-4 border-l-[#E8BD47] hover:border-[#E8BD47] group cursor-pointer" onClick={() => navigate(`/admin/resources/${resource.id}`)}>
                             <div className="flex justify-between items-start mb-4">
-                                <div className="p-3 bg-purple-100 text-purple-600 rounded-lg">
+                                <div className="p-3 rounded-xl transition-all duration-300 bg-[#E8BD47]/10 text-[#E8BD47] group-hover:bg-[#E8BD47] group-hover:text-white">
                                     <FileText size={24} />
                                 </div>
                                 <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -84,7 +82,7 @@ export const ResourceList = () => {
                                     </button>
                                 </div>
                             </div>
-                            <h3 className="font-bold text-lg text-primary mb-2 line-clamp-1">{resource.title}</h3>
+                            <h3 className="font-bold text-lg text-[#1B1B3F] mb-2 line-clamp-1">{resource.title}</h3>
                             <p className="text-sm text-text-secondary line-clamp-2 mb-4 h-10">
                                 {resource.base_description || 'Sin descripción...'}
                             </p>

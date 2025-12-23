@@ -8,6 +8,7 @@ import { Button } from '../../../components/ui/Button'
 import { Badge } from '../../../components/ui/Badge'
 import { Plus, Users, Calendar, Edit2, Trash2 } from 'lucide-react'
 import { ConfirmModal } from '../../../components/ConfirmModal'
+import { Modal, ModalFooter } from '../../../components/ui/Modal'
 
 export const CohortsManager = () => {
     const navigate = useNavigate()
@@ -129,8 +130,6 @@ export const CohortsManager = () => {
             <PageHeader
                 title="Gestión de Cohortes"
                 subtitle="Administra grupos académicos y asignaciones."
-                role="Admin"
-                roleColor="red"
             >
                 <Button onClick={() => {
                     setEditingId(null)
@@ -144,7 +143,7 @@ export const CohortsManager = () => {
             {loading ? <div className="text-center py-10">Cargando...</div> : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {cohorts.map(cohort => (
-                        <Card key={cohort.id} className="p-6 hover:shadow-lg transition-all group relative">
+                        <Card key={cohort.id} className="p-6 hover:shadow-lg transition-all group relative border-l-4 border-l-[#D45A4E] hover:border-[#D45A4E] cursor-pointer" onClick={() => navigate(`/admin/cohorts/${cohort.id}`)}>
                             <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                 <button onClick={(e) => { e.stopPropagation(); startEdit(cohort) }} className="p-1.5 bg-blue-50 text-blue-600 rounded-md hover:bg-blue-100">
                                     <Edit2 size={16} />
@@ -154,12 +153,12 @@ export const CohortsManager = () => {
                                 </button>
                             </div>
 
-                            <div onClick={() => navigate(`/admin/cohorts/${cohort.id}`)} className="cursor-pointer">
+                            <div>
                                 <div className="mb-4">
                                     <Badge variant={cohort.type === 'minor' ? 'green' : 'purple'} className="mb-2">
                                         {cohort.type === 'minor' ? 'Menores' : 'Adultos'}
                                     </Badge>
-                                    <h3 className="text-xl font-bold text-gray-800">{cohort.name}</h3>
+                                    <h3 className="text-lg font-bold text-[#1B1B3F]">{cohort.name}</h3>
                                     {cohort.instructor && (
                                         <p className="text-sm text-gray-500 mt-1">Docente: <span className="font-medium text-gray-700">{cohort.instructor.full_name}</span></p>
                                     )}
@@ -184,73 +183,75 @@ export const CohortsManager = () => {
             )}
 
             {/* Create/Edit Modal */}
-            {showForm && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-                    <div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6">
-                        <h2 className="text-xl font-bold mb-4">{editingId ? 'Editar Cohorte' : 'Nueva Cohorte'}</h2>
-                        <form onSubmit={handleSubmit} className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Nombre del Grupo</label>
-                                <input
-                                    type="text" required
-                                    className="w-full p-2 border rounded-lg"
-                                    value={formData.name}
-                                    onChange={e => setFormData({ ...formData, name: e.target.value })}
-                                    placeholder="Ej: Grupo A - Mañana"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de Público</label>
-                                <select
-                                    className="w-full p-2 border rounded-lg"
-                                    value={formData.type}
-                                    onChange={e => setFormData({ ...formData, type: e.target.value })}
-                                >
-                                    <option value="minor">Menores (Escolar)</option>
-                                    <option value="adult">Adultos (Profesional)</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Docente Encargado</label>
-                                <select
-                                    className="w-full p-2 border rounded-lg"
-                                    value={formData.instructor_id}
-                                    onChange={e => setFormData({ ...formData, instructor_id: e.target.value })}
-                                >
-                                    <option value="">Seleccionar Docente...</option>
-                                    {teachers.map(t => (
-                                        <option key={t.id} value={t.id}>{t.full_name}</option>
-                                    ))}
-                                </select>
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Inicio</label>
-                                    <input
-                                        type="date"
-                                        className="w-full p-2 border rounded-lg"
-                                        value={formData.start_date}
-                                        onChange={e => setFormData({ ...formData, start_date: e.target.value })}
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Fin</label>
-                                    <input
-                                        type="date"
-                                        className="w-full p-2 border rounded-lg"
-                                        value={formData.end_date}
-                                        onChange={e => setFormData({ ...formData, end_date: e.target.value })}
-                                    />
-                                </div>
-                            </div>
-                            <div className="flex gap-3 pt-4">
-                                <Button variant="outline" className="flex-1" onClick={() => setShowForm(false)} type="button">Cancelar</Button>
-                                <Button className="flex-1" type="submit">Guardar</Button>
-                            </div>
-                        </form>
+            <Modal
+                isOpen={showForm}
+                onClose={() => setShowForm(false)}
+                title={editingId ? 'Editar Cohorte' : 'Nueva Cohorte'}
+                description={editingId ? 'Modifica los detalles del grupo.' : 'Crea un nuevo grupo académico.'}
+                mode={editingId ? 'edit' : 'create'}
+            >
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    <div>
+                        <label className="block text-xs font-bold text-[#1B1B3F] uppercase mb-1.5 tracking-wide">Nombre del Grupo</label>
+                        <input
+                            type="text" required
+                            className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                            value={formData.name}
+                            onChange={e => setFormData({ ...formData, name: e.target.value })}
+                            placeholder="Ej: Cohorte Alpha 2025"
+                        />
                     </div>
-                </div>
-            )}
+                    <div>
+                        <label className="block text-xs font-bold text-[#1B1B3F] uppercase mb-1.5 tracking-wide">Tipo de Público</label>
+                        <select
+                            className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none bg-white"
+                            value={formData.type}
+                            onChange={e => setFormData({ ...formData, type: e.target.value })}
+                        >
+                            <option value="minor">Menores (Escolar)</option>
+                            <option value="adult">Adultos (Profesional)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label className="block text-xs font-bold text-[#1B1B3F] uppercase mb-1.5 tracking-wide">Docente Encargado</label>
+                        <select
+                            className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none bg-white"
+                            value={formData.instructor_id}
+                            onChange={e => setFormData({ ...formData, instructor_id: e.target.value })}
+                        >
+                            <option value="">Seleccionar Docente...</option>
+                            {teachers.map(t => (
+                                <option key={t.id} value={t.id}>{t.full_name}</option>
+                            ))}
+                        </select>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-xs font-bold text-[#1B1B3F] uppercase mb-1.5 tracking-wide">Inicio</label>
+                            <input
+                                type="date"
+                                className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none"
+                                value={formData.start_date}
+                                onChange={e => setFormData({ ...formData, start_date: e.target.value })}
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-xs font-bold text-[#1B1B3F] uppercase mb-1.5 tracking-wide">Fin</label>
+                            <input
+                                type="date"
+                                className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none"
+                                value={formData.end_date}
+                                onChange={e => setFormData({ ...formData, end_date: e.target.value })}
+                            />
+                        </div>
+                    </div>
+                    <ModalFooter
+                        onCancel={() => setShowForm(false)}
+                        saveLabel="Guardar Cohorte"
+                        isSaveDisabled={!formData.name || !formData.type}
+                    />
+                </form>
+            </Modal>
 
             <ConfirmModal
                 isOpen={showDelete}

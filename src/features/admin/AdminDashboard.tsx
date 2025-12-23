@@ -1,12 +1,10 @@
+
 import { useState, useCallback, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { PageHeader } from '../../components/ui/PageHeader'
 import { Card } from '../../components/ui/Card'
-
-import { Users, FileText, Activity, BookOpen } from 'lucide-react'
-
-
+import { Users, FileText, Activity, BookOpen, ExternalLink, Zap, Clock } from 'lucide-react'
 
 export const AdminDashboard = () => {
     const navigate = useNavigate()
@@ -19,9 +17,6 @@ export const AdminDashboard = () => {
             const { count: usersCount } = await supabase.from('profiles').select('*', { count: 'exact', head: true })
             const { count: evidenceCount } = await supabase.from('evidences').select('*', { count: 'exact', head: true })
             const { count: resourcesCount } = await supabase.from('resource_library').select('*', { count: 'exact', head: true })
-            // Fix: Table name is 'Opportunities' (capitalized) based on previous context, or try case-insensitive if needed. 
-            // Based on lint errors, it seems correct name might be 'Opportunities' in types but let's check. 
-            // In step 435 (database.types.ts), the table is 'Opportunities'.
             const { count: opportunitiesCount } = await supabase.from('opportunities' as any).select('*', { count: 'exact', head: true })
             const { count: cohortsCount } = await supabase.from('cohorts').select('*', { count: 'exact', head: true })
             const { count: subjectsCount } = await supabase.from('subjects').select('*', { count: 'exact', head: true })
@@ -50,8 +45,6 @@ export const AdminDashboard = () => {
         window.addEventListener('focus', fetchData)
         return () => window.removeEventListener('focus', fetchData)
     }, [fetchData])
-
-
 
     // Recent Activity State
     const [recentActivity, setRecentActivity] = useState<any[]>([])
@@ -105,172 +98,233 @@ export const AdminDashboard = () => {
 
     useEffect(() => {
         fetchRecentActivity()
-        // Poll every 30s
         const interval = setInterval(fetchRecentActivity, 30000)
         return () => clearInterval(interval)
     }, [fetchRecentActivity])
 
 
     return (
-
         <div className="p-4 md:p-8 space-y-8 max-w-7xl mx-auto min-h-screen">
-            <PageHeader title="Torre de Control" subtitle="Gestión centralizada de la plataforma." role="Admin" roleColor="red" />
+            <PageHeader
+                title="Torre de Control"
+                subtitle="Visión global del ecosistema de aprendizaje."
+            />
 
             {/* Stats Overview */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <Card className="p-6 bg-gradient-to-br from-blue-500 to-blue-700 text-white shadow-xl hover:shadow-2xl transition-all cursor-pointer transform hover:-translate-y-1" onClick={() => navigate('/admin/users')}>
-                    <div className="flex justify-between items-start">
-                        <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
-                            <Users size={32} className="text-white" />
-                        </div>
-                        <span className="bg-white/20 px-2 py-1 rounded text-xs font-medium backdrop-blur-sm">Total</span>
+            {/* Stats Overview */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+
+                {/* 1. Usuarios - #66AD9D */}
+                <Card className="relative overflow-hidden group hover:shadow-2xl transition-all duration-300 border-none bg-[#66AD9D] text-white">
+                    <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity transform group-hover:scale-110 duration-500">
+                        <Users size={80} />
                     </div>
-                    <div className="mt-4">
-                        <p className="text-blue-100 text-sm font-medium uppercase tracking-wide">Usuarios Activos</p>
-                        <h3 className="text-4xl font-black mt-1">{stats.users}</h3>
+                    <div className="p-6 relative z-10">
+                        <div className="flex justify-between items-start mb-4">
+                            <div className="p-2 bg-white/20 rounded-lg backdrop-blur-md">
+                                <Users size={24} className="text-white" />
+                            </div>
+                            <span className="bg-white/20 px-2.5 py-1 rounded-full text-xs font-bold backdrop-blur-md border border-white/10">Total</span>
+                        </div>
+                        <div>
+                            <p className="text-white/80 text-xs font-bold uppercase tracking-wider mb-1">Usuarios Activos</p>
+                            <h3 className="text-4xl font-black">{stats.users}</h3>
+                        </div>
                     </div>
                 </Card>
 
-                <Card className="p-6 bg-gradient-to-br from-orange-500 to-red-600 text-white shadow-xl hover:shadow-2xl transition-all cursor-pointer transform hover:-translate-y-1" onClick={() => navigate('/admin/resources')}>
-                    <div className="flex justify-between items-start">
-                        <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
-                            <FileText size={32} className="text-white" />
-                        </div>
-                        <span className="bg-white/20 px-2 py-1 rounded text-xs font-medium backdrop-blur-sm">Librería</span>
+                {/* 2. Recursos - #E8BD47 */}
+                <Card className="relative overflow-hidden group hover:shadow-2xl transition-all duration-300 border-none bg-[#E8BD47] text-white">
+                    <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity transform group-hover:scale-110 duration-500">
+                        <FileText size={80} />
                     </div>
-                    <div className="mt-4">
-                        <p className="text-orange-100 text-sm font-medium uppercase tracking-wide">Recursos Educativos</p>
-                        <h3 className="text-4xl font-black mt-1">{stats.resources}</h3>
+                    <div className="p-6 relative z-10">
+                        <div className="flex justify-between items-start mb-4">
+                            <div className="p-2 bg-white/20 rounded-lg backdrop-blur-md">
+                                <FileText size={24} className="text-white" />
+                            </div>
+                            <span className="bg-white/20 px-2.5 py-1 rounded-full text-xs font-bold backdrop-blur-md border border-white/10">Librería</span>
+                        </div>
+                        <div>
+                            <p className="text-white/80 text-xs font-bold uppercase tracking-wider mb-1">Recursos</p>
+                            <h3 className="text-4xl font-black">{stats.resources}</h3>
+                        </div>
                     </div>
                 </Card>
 
-                <Card className="p-6 bg-gradient-to-br from-teal-500 to-emerald-600 text-white shadow-xl hover:shadow-2xl transition-all cursor-pointer transform hover:-translate-y-1" onClick={() => navigate('/admin/opportunities')}>
-                    <div className="flex justify-between items-start">
-                        <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
-                            <Activity size={32} className="text-white" />
-                        </div>
-                        <span className="bg-white/20 px-2 py-1 rounded text-xs font-medium backdrop-blur-sm">Activas</span>
+                {/* 3. Oportunidades - #E49744 */}
+                <Card className="relative overflow-hidden group hover:shadow-2xl transition-all duration-300 border-none bg-[#E49744] text-white">
+                    <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity transform group-hover:scale-110 duration-500">
+                        <Activity size={80} />
                     </div>
-                    <div className="mt-4">
-                        <p className="text-teal-100 text-sm font-medium uppercase tracking-wide">Oportunidades</p>
-                        <h3 className="text-4xl font-black mt-1">{stats.opportunities}</h3>
+                    <div className="p-6 relative z-10">
+                        <div className="flex justify-between items-start mb-4">
+                            <div className="p-2 bg-white/20 rounded-lg backdrop-blur-md">
+                                <Activity size={24} className="text-white" />
+                            </div>
+                            <span className="bg-white/20 px-2.5 py-1 rounded-full text-xs font-bold backdrop-blur-md border border-white/10">Oportunidades</span>
+                        </div>
+                        <div>
+                            <p className="text-white/80 text-xs font-bold uppercase tracking-wider mb-1">Activas</p>
+                            <h3 className="text-4xl font-black">{stats.opportunities}</h3>
+                        </div>
                     </div>
                 </Card>
 
-                <Card className="p-6 bg-gradient-to-br from-purple-600 to-indigo-700 text-white shadow-xl hover:shadow-2xl transition-all cursor-pointer transform hover:-translate-y-1" onClick={() => navigate('/admin/cohorts')}>
-                    <div className="flex justify-between items-start">
-                        <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
-                            <Users size={32} className="text-white" />
-                        </div>
-                        <span className="bg-white/20 px-2 py-1 rounded text-xs font-medium backdrop-blur-sm">Grupos</span>
+                {/* 4. Cohortes - #D45A4E */}
+                <Card className="relative overflow-hidden group hover:shadow-2xl transition-all duration-300 border-none bg-[#D45A4E] text-white">
+                    <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity transform group-hover:scale-110 duration-500">
+                        <Users size={80} />
                     </div>
-                    <div className="mt-4">
-                        <p className="text-indigo-100 text-sm font-medium uppercase tracking-wide">Cohortes</p>
-                        <h3 className="text-4xl font-black mt-1">{stats.cohorts}</h3>
+                    <div className="p-6 relative z-10">
+                        <div className="flex justify-between items-start mb-4">
+                            <div className="p-2 bg-white/20 rounded-lg backdrop-blur-md">
+                                <Users size={24} className="text-white" />
+                            </div>
+                            <span className="bg-white/20 px-2.5 py-1 rounded-full text-xs font-bold backdrop-blur-md border border-white/10">Grupos</span>
+                        </div>
+                        <div>
+                            <p className="text-white/80 text-xs font-bold uppercase tracking-wider mb-1">Cohortes</p>
+                            <h3 className="text-4xl font-black">{stats.cohorts}</h3>
+                        </div>
+                    </div>
+                </Card>
+
+                {/* 5. Materias (Moved Up) - #1B1B3F */}
+                <Card className="relative overflow-hidden group hover:shadow-2xl transition-all duration-300 border-none bg-[#1B1B3F] text-white">
+                    <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity transform group-hover:scale-110 duration-500">
+                        <BookOpen size={80} />
+                    </div>
+                    <div className="p-6 relative z-10">
+                        <div className="flex justify-between items-start mb-4">
+                            <div className="p-2 bg-white/20 rounded-lg backdrop-blur-md">
+                                <BookOpen size={24} className="text-white" />
+                            </div>
+                            <span className="bg-white/20 px-2.5 py-1 rounded-full text-xs font-bold backdrop-blur-md border border-white/10">Academia</span>
+                        </div>
+                        <div>
+                            <p className="text-white/80 text-xs font-bold uppercase tracking-wider mb-1">Materias</p>
+                            <h3 className="text-4xl font-black">{stats.subjects}</h3>
+                        </div>
                     </div>
                 </Card>
             </div>
 
-            {/* Secondary Stats Row */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <Card className="p-5 flex items-center gap-4 hover:shadow-md transition-shadow cursor-pointer border border-gray-100" onClick={() => navigate('/admin/subjects')}>
-                    <div className="p-3 bg-pink-100 text-pink-600 rounded-full">
-                        <BookOpen size={24} />
+            {/* Secondary Stats Row - Only Evidence and Metrics */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Card className="p-5 flex items-center gap-5 hover:shadow-lg transition-all border-l-4 border-l-[#4B3179] group">
+                    <div className="p-3 bg-[#4B3179]/10 text-[#4B3179] rounded-xl group-hover:bg-[#4B3179] group-hover:text-white transition-colors duration-300">
+                        <Zap size={24} />
                     </div>
                     <div>
-                        <p className="text-gray-500 text-xs font-bold uppercase">Materias</p>
-                        <p className="text-2xl font-black text-gray-800">{stats.subjects}</p>
+                        <p className="text-gray-400 text-[10px] font-bold uppercase tracking-widest">Actividad</p>
+                        <div className="flex items-baseline gap-2">
+                            <p className="text-2xl font-black text-gray-800">{stats.evidence}</p>
+                            <span className="text-sm text-gray-500 font-medium">Evidencias</span>
+                        </div>
                     </div>
                 </Card>
-                <Card className="p-5 flex items-center gap-4 bg-white border border-gray-100">
-                    <div className="p-3 bg-purple-100 text-purple-600 rounded-full">
-                        <FileText size={24} />
-                    </div>
-                    <div>
-                        <p className="text-gray-500 text-xs font-bold uppercase">Evidencias Totales</p>
-                        <p className="text-2xl font-black text-gray-800">{stats.evidence}</p>
-                    </div>
-                </Card>
-                <Card className="p-5 flex items-center gap-4 bg-white border border-gray-100">
-                    <div className="p-3 bg-green-100 text-green-600 rounded-full">
+                <Card className="p-5 flex items-center gap-5 hover:shadow-lg transition-all border-l-4 border-l-[#4B3179] group">
+                    <div className="p-3 bg-[#4B3179]/10 text-[#4B3179] rounded-xl group-hover:bg-[#4B3179] group-hover:text-white transition-colors duration-300">
                         <Activity size={24} />
                     </div>
                     <div>
-                        <p className="text-gray-500 text-xs font-bold uppercase">Impacto Generado</p>
-                        <p className="text-2xl font-black text-gray-800">{stats.impact}</p>
+                        <p className="text-gray-400 text-[10px] font-bold uppercase tracking-widest">Métricas</p>
+                        <div className="flex items-baseline gap-2">
+                            <p className="text-2xl font-black text-gray-800">{stats.impact}</p>
+                            <span className="text-sm text-gray-500 font-medium">Impacto KGs</span>
+                        </div>
                     </div>
                 </Card>
             </div>
 
-            {/* Dashboard Widgets */}
+            {/* Content & Quick Actions */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 pb-10">
                 {/* 1. Quick Actions */}
-                <div className="space-y-4">
-                    <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
-                        <Activity className="text-primary" size={20} /> Accesos Rápidos
-                    </h3>
-                    <div className="grid grid-cols-1 gap-3">
-                        <button onClick={() => navigate('/admin/users')} className="p-4 bg-white border border-gray-200 rounded-xl hover:border-blue-500 hover:shadow-md transition-all text-left flex items-center gap-4 group">
-                            <div className="p-2 bg-blue-50 text-blue-600 rounded-lg group-hover:bg-blue-100 transition-colors">
-                                <Users size={20} />
+                <div className="space-y-5">
+                    <div className="flex items-center gap-2 pb-2 border-b border-gray-100">
+                        <Zap className="text-secondary" size={20} />
+                        <h3 className="text-lg font-bold text-gray-800">Accesos Directos</h3>
+                    </div>
+
+                    <div className="space-y-4">
+                        <button onClick={() => navigate('/admin/users')} className="w-full p-4 bg-white border border-gray-200 rounded-2xl hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 transition-all text-left flex items-start gap-4 group relative overflow-hidden">
+                            <div className="absolute top-0 right-0 p-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <ExternalLink size={16} className="text-gray-400" />
+                            </div>
+                            <div className="p-3 bg-blue-50 text-blue-600 rounded-xl group-hover:scale-110 transition-transform duration-300">
+                                <Users size={22} />
                             </div>
                             <div>
-                                <h4 className="font-bold text-gray-800 group-hover:text-blue-700">Gestionar Usuarios</h4>
-                                <p className="text-xs text-gray-500">Alta y baja de alumnos/docentes</p>
+                                <h4 className="font-bold text-gray-800 group-hover:text-primary transition-colors">Gestionar Usuarios</h4>
+                                <p className="text-xs text-gray-500 mt-1 leading-relaxed">Administración de roles, altas y bajas de estudiantes.</p>
                             </div>
                         </button>
-                        <button onClick={() => navigate('/admin/cohorts')} className="p-4 bg-white border border-gray-200 rounded-xl hover:border-indigo-500 hover:shadow-md transition-all text-left flex items-center gap-4 group">
-                            <div className="p-2 bg-indigo-50 text-indigo-600 rounded-lg group-hover:bg-indigo-100 transition-colors">
-                                <Users size={20} />
+
+                        <button onClick={() => navigate('/admin/cohorts')} className="w-full p-4 bg-white border border-gray-200 rounded-2xl hover:border-indigo-500/50 hover:shadow-lg hover:shadow-indigo-500/5 transition-all text-left flex items-start gap-4 group relative overflow-hidden">
+                            <div className="absolute top-0 right-0 p-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <ExternalLink size={16} className="text-gray-400" />
+                            </div>
+                            <div className="p-3 bg-indigo-50 text-indigo-600 rounded-xl group-hover:scale-110 transition-transform duration-300">
+                                <Users size={22} />
                             </div>
                             <div>
-                                <h4 className="font-bold text-gray-800 group-hover:text-indigo-700">Ver Cohortes</h4>
-                                <p className="text-xs text-gray-500">Administrar grupos académicos</p>
+                                <h4 className="font-bold text-gray-800 group-hover:text-indigo-600 transition-colors">Gestionar Grupos</h4>
+                                <p className="text-xs text-gray-500 mt-1 leading-relaxed">Creación de cohortes y asignación de profesores.</p>
                             </div>
                         </button>
-                        <button onClick={() => navigate('/admin/resources')} className="p-4 bg-white border border-gray-200 rounded-xl hover:border-orange-500 hover:shadow-md transition-all text-left flex items-center gap-4 group">
-                            <div className="p-2 bg-orange-50 text-orange-600 rounded-lg group-hover:bg-orange-100 transition-colors">
-                                <FileText size={20} />
+
+                        <button onClick={() => navigate('/admin/resources')} className="w-full p-4 bg-white border border-gray-200 rounded-2xl hover:border-secondary/50 hover:shadow-lg hover:shadow-secondary/5 transition-all text-left flex items-start gap-4 group relative overflow-hidden">
+                            <div className="absolute top-0 right-0 p-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <ExternalLink size={16} className="text-gray-400" />
+                            </div>
+                            <div className="p-3 bg-orange-50 text-orange-600 rounded-xl group-hover:scale-110 transition-transform duration-300">
+                                <FileText size={22} />
                             </div>
                             <div>
-                                <h4 className="font-bold text-gray-800 group-hover:text-orange-700">Librería de Recursos</h4>
-                                <p className="text-xs text-gray-500">Gestionar contenido educativo</p>
+                                <h4 className="font-bold text-gray-800 group-hover:text-secondary transition-colors">Librería de Recursos</h4>
+                                <p className="text-xs text-gray-500 mt-1 leading-relaxed">Configuración de retos, métricas y contenido.</p>
                             </div>
                         </button>
                     </div>
                 </div>
 
                 {/* 2. System Overview / Activity Log */}
-                <div className="lg:col-span-2 space-y-4">
-                    <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
-                        <Activity className="text-primary" size={20} /> Resumen del Sistema
-                    </h3>
-                    <Card className="p-0 bg-white border border-gray-100 overflow-hidden h-full flex flex-col">
-                        <div className="p-4 border-b border-gray-50 bg-gray-50/50 flex justify-between items-center">
-                            <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Actividad Reciente</span>
-                            <span className="text-xs text-blue-600 font-medium cursor-pointer hover:underline">Ver todo</span>
+                <div className="lg:col-span-2 space-y-5">
+                    <div className="flex items-center justify-between pb-2 border-b border-gray-100">
+                        <div className="flex items-center gap-2">
+                            <Clock className="text-gray-400" size={20} />
+                            <h3 className="text-lg font-bold text-gray-800">Actividad del Sistema</h3>
                         </div>
+                        <span className="text-xs font-bold text-primary bg-primary/10 px-3 py-1 rounded-full animate-pulse">En vivo</span>
+                    </div>
 
-                        <div className="divide-y divide-gray-50 overflow-y-auto max-h-[400px]">
+                    <Card className="p-0 bg-white border border-gray-100 shadow-sm overflow-hidden h-full">
+                        <div className="divide-y divide-gray-50 max-h-[500px] overflow-y-auto custom-scrollbar">
                             {recentActivity.length === 0 ? (
-                                <div className="p-8 text-center text-gray-400">
-                                    <Activity size={32} className="mx-auto mb-2 opacity-50" />
-                                    <p>Sin actividad reciente</p>
+                                <div className="p-12 text-center text-gray-300 flex flex-col items-center gap-4">
+                                    <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center">
+                                        <Activity size={32} className="opacity-50" />
+                                    </div>
+                                    <p className="font-medium">Esperando nueva actividad...</p>
                                 </div>
                             ) : (
                                 recentActivity.map((item) => (
-                                    <div key={`${item.type}-${item.id}`} className="p-4 flex gap-4 hover:bg-gray-50 transition-colors">
-                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${item.color}`}>
-                                            <item.icon size={20} />
+                                    <div key={`${item.type}-${item.id}`} className="p-5 flex gap-5 hover:bg-gray-50/80 transition-colors group">
+                                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-sm ${item.color} group-hover:scale-105 transition-transform`}>
+                                            <item.icon size={22} />
                                         </div>
-                                        <div className="flex-grow min-w-0">
-                                            <div className="flex justify-between items-start mb-1">
-                                                <h4 className="font-bold text-gray-800 text-sm truncate">{item.title}</h4>
-                                                <span className="text-[10px] text-gray-400 whitespace-nowrap ml-2">
-                                                    {item.date.toLocaleDateString()} {item.date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                        <div className="flex-grow min-w-0 pt-0.5">
+                                            <div className="flex justify-between items-start mb-1.5">
+                                                <h4 className="font-bold text-gray-800 text-sm truncate pr-4">{item.title}</h4>
+                                                <span className="text-[10px] font-medium text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full whitespace-nowrap">
+                                                    {item.date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                                 </span>
                                             </div>
-                                            <p className="text-sm text-gray-600 line-clamp-2">{item.description}</p>
+                                            <p className="text-sm text-gray-600 line-clamp-2 leading-relaxed">{item.description}</p>
+                                            <p className="text-[10px] text-gray-400 mt-2 flex items-center gap-1">
+                                                <Clock size={10} /> {item.date.toLocaleDateString()}
+                                            </p>
                                         </div>
                                     </div>
                                 ))
