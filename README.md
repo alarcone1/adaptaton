@@ -1,73 +1,110 @@
-# React + TypeScript + Vite
+# 🚀 Adaptatón Digital
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**Plataforma Integral de Gestión Educativa y Retos de Impacto**
 
-Currently, two official plugins are available:
+Adaptatón Digital es una solución tecnológica diseñada para conectar el talento joven con oportunidades reales a través de un modelo de aprendizaje basado en retos. La plataforma orquesta la interacción entre estudiantes, docentes, aliados (empresas) y administradores, facilitando la creación de cohortes, la validación de evidencias y la construcción de portafolios de talento verificados.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+---
 
-## React Compiler
+## 🌟 Características Principales
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+La plataforma se divide en 4 módulos especializados, cada uno con una interfaz y funcionalidades adaptadas al rol del usuario:
 
-## Expanding the ESLint configuration
+### 1. 🛠️ Torre de Control (Admin)
+Gestión centralizada del ecosistema.
+- **Dashboard en Tiempo Real**: KPIs de usuarios, cohortes y actividad reciente.
+- **Gestión Académica**: Creación de materias, cohortes (grupos) y asignación de docentes.
+- **Arquitecto de Recursos**: Constructor de retos dinámicos con métricas personalizadas.
+- **Gestor de Oportunidades**: Publicación de becas y empleos para estudiantes.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### 2. 🎓 La Ruta del Aprendiz (Estudiante)
+Experiencia gamificada para el desarrollo de talento.
+- **Timeline Interactivo**: Visualización clara del progreso del curso y actividades pendientes.
+- **Portafolio de Evidencias**: Captura de retos con soporte multimedia (fotos/texto) y geolocalización.
+- **Modo Offline**: Sincronización automática de evidencias cuando se recupera la conexión.
+- **Muro de Comunidad**: Feed social para ver los logros de los compañeros de cohorte.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### 3. 👩‍🏫 Panel Docente (Teacher)
+Herramientas para facilitar y validar el aprendizaje.
+- **Sala de Validación**: Interfaz optimizada para aprobar o rechazar evidencias con retroalimentación.
+- **Gradebook**: Matriz de calificaciones y seguimiento de asistencia.
+- **Gestión de Cursos**: Control total sobre las actividades y estudiantes asignados.
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+### 4. 🤝 Vitrina de Talento (Partner)
+Conexión con el sector productivo.
+- **Showcase**: Exploración de talentos destacados basada en evidencias reales.
+- **Gestión de Intereses**: Marcado de candidatos potenciales (Leads).
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+---
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## 🛠️ Stack Tecnológico
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+El proyecto está construido utilizando tecnologías modernas para garantizar rendimiento, escalabilidad y una excelente experiencia de usuario:
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+*   **Frontend**: [React 18](https://reactjs.org/) + [TypeScript](https://www.typescriptlang.org/) + [Vite](https://vitejs.dev/)
+*   **Estilos**: [TailwindCSS](https://tailwindcss.com/) (Diseño "mobile-first")
+*   **Base de Datos & Auth**: [Supabase](https://supabase.com/) (PostgreSQL + RLS)
+*   **Iconografía**: [Lucide React](https://lucide.dev/)
+*   **Mapas**: [Leaflet](https://leafletjs.com/)
+*   **Almacenamiento Local**: [IndexedDB](https://developer.mozilla.org/es/docs/Web/API/IndexedDB_API) (para soporte offline)
+
+---
+
+## 🚀 Instalación y Configuración
+
+Sigue estos pasos para levantar el proyecto en tu entorno local:
+
+### Prerrequisitos
+*   Node.js (v18 o superior)
+*   npm o yarn
+
+### Pasos
+
+1.  **Clonar el repositorio:**
+    ```bash
+    git clone https://github.com/alarcone1/adaptaton.git
+    cd adaptaton
+    ```
+
+2.  **Instalar dependencias:**
+    ```bash
+    npm install
+    ```
+
+3.  **Configurar Variables de Entorno:**
+    Crea un archivo `.env` en la raíz del proyecto basándote en el siguiente esquema:
+
+    ```env
+    VITE_SUPABASE_URL=tu_url_de_supabase
+    VITE_SUPABASE_ANON_KEY=tu_clave_anonima_de_supabase
+    ```
+
+4.  **Ejecutar el servidor de desarrollo:**
+    ```bash
+    npm run dev
+    ```
+
+5.  **Abrir en el navegador:**
+    La aplicación estará disponible en `http://localhost:5173`.
+
+---
+
+## 📚 Documentación Adicional
+
+Para profundizar en la estructura y diseño del proyecto, consulta los siguientes documentos internos:
+
+*   [**ROLES.md**](./ROLES.md): Definición detallada de los roles de usuario, permisos y funcionalidades proyectadas.
+*   [**ESTILOS.md**](./ESTILOS.md): Guía de estilos, palenta de colores, tipografía y uso de componentes.
+
+---
+
+## 🔒 Seguridad
+
+El sistema implementa **Row Level Security (RLS)** de PostgreSQL para garantizar que:
+*   Los estudiantes solo ven su propia data y la de su cohorte.
+*   Los docentes solo acceden a los cursos asignados.
+*   Los datos sensibles están protegidos a nivel de base de datos.
+
+---
+
+© 2024 Adaptatón Digital. Todos los derechos reservados.
