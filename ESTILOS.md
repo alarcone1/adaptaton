@@ -17,11 +17,12 @@ La paleta de colores busca transmitir profesionalismo, calma y energía, alinead
     *   *Uso Exclusivo*: Títulos de tarjetas (Cards) y encabezados de formularios (Labels).
 
 ### Colores de Estado y Módulos
-Colores específicos asignados para diferenciar visualmente los tipos de contenido en las tarjetas (Border-Left):
+Colores específicos asignados para diferenciar visualmente los tipos de contenido en las tarjetas (Border-Left) y los Accesos Rápidos del Dashboard:
 *   **Usuarios**: `#66AD9D` (Verde Turquesa Suave)
 *   **Cohortes**: `#D45A4E` (Rojo Ladrillo Suave)
 *   **Materias**: `#1B1B3F` (Azul Oscuro)
 *   **Oportunidades**: `#E49744` (Naranja Dorado)
+*   **Recursos**: `#E8BD47` (Amarillo Mostaza)
 
 ## 2. Tipografía
 
@@ -81,6 +82,19 @@ Utilizadas para listas de elementos en los gestores (Usuarios, Cohortes, etc.).
 
 *   **Librería**: `lucide-react`.
 *   **Estilo**: Línea simple y limpia.
+
+### Mapeo Estándar de Iconos (Admin)
+Cada módulo tiene un icono asignado que debe usarse en Sidebar, Dashboard Cards y PageHeaders:
+
+| Módulo | Icono (Lucide) | Contexto |
+| :--- | :--- | :--- |
+| **Torre de Control** | `LayoutGrid` | Vista general, Dashboard. |
+| **Usuarios** | `Users` | Gestión de personas, roles. |
+| **Cohortes** | `Users` | Grupos, clases (Mismo que usuarios por ahora). |
+| **Materias** | `BookOpen` | Asignaturas académicas. |
+| **Recursos** | `FileText` | Biblioteca, retos, documentos. |
+| **Oportunidades** | `Activity` | Ofertas, empleos, becas. |
+
 *   **Animaciones Micro**:
     *   Botones crecen levemente al presionar (`active:scale-95`).
     *   Transiciones suaves de color (`transition-colors duration-300`) en todos los elementos interactivos.

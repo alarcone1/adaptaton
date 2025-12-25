@@ -6,6 +6,7 @@ import { useAuth } from '../../lib/AuthContext'
 
 import { Card } from '../../components/ui/Card'
 import { Button } from '../../components/ui/Button'
+import { PageHeader } from '../../components/ui/PageHeader'
 import { Camera, MapPin, Loader2, Wifi, WifiOff, UploadCloud, ArrowLeft } from 'lucide-react'
 import type { Database } from '../../lib/database.types'
 
@@ -238,25 +239,22 @@ export const CaptureEvidence = () => {
                 <ArrowLeft size={18} /> Cancelar y Volver
             </button>
 
-            <div className="flex items-center gap-2 mb-6">
-                <div className="p-2 bg-primary/10 rounded-lg text-primary">
-                    <Camera size={24} />
-                </div>
-                <div>
-                    <h1 className="text-2xl font-bold text-primary">Capturar Evidencia</h1>
-                    <div className="flex items-center gap-2 text-xs font-medium">
-                        <span className={`flex items-center gap-1 ${isOnline ? 'text-green-600' : 'text-orange-500'}`}>
-                            {isOnline ? <Wifi size={12} /> : <WifiOff size={12} />}
-                            {isOnline ? 'Online' : 'Modo Offline Activado'}
+            <PageHeader
+                title="Capturar Evidencia"
+                icon={Camera}
+            >
+                <div className="flex items-center gap-2 text-xs font-medium mt-1">
+                    <span className={`flex items-center gap-1 ${isOnline ? 'text-green-600' : 'text-orange-500'}`}>
+                        {isOnline ? <Wifi size={12} /> : <WifiOff size={12} />}
+                        {isOnline ? 'Online' : 'Modo Offline Activado'}
+                    </span>
+                    {pendingUploads > 0 && (
+                        <span className="text-orange-500 flex items-center gap-1">
+                            • <UploadCloud size={12} /> {pendingUploads} pendientes
                         </span>
-                        {pendingUploads > 0 && (
-                            <span className="text-orange-500 flex items-center gap-1">
-                                • <UploadCloud size={12} /> {pendingUploads} pendientes
-                            </span>
-                        )}
-                    </div>
+                    )}
                 </div>
-            </div>
+            </PageHeader>
 
             <Card className="p-0 overflow-hidden">
                 {/* Image Preview / Camera Input */}
@@ -296,7 +294,8 @@ export const CaptureEvidence = () => {
 
                 <form onSubmit={handleSubmit} className="p-6 space-y-6">
                     {/* Location Badge */}
-                    <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-lg border border-blue-100 text-blue-800 text-sm">
+                    {/* Location Badge */}
+                    <div className="flex items-center gap-2 p-3 bg-[#4B3179]/5 rounded-lg border border-[#4B3179]/20 text-[#4B3179] text-sm">
                         <MapPin size={16} className="shrink-0" />
                         {location ? (
                             <span>Ubicación detectada: {location.lat.toFixed(4)}, {location.lng.toFixed(4)}</span>
@@ -304,7 +303,7 @@ export const CaptureEvidence = () => {
                             <button
                                 type="button"
                                 onClick={getLocation}
-                                className="text-blue-800 font-medium hover:underline"
+                                className="text-[#4B3179] font-bold hover:underline"
                             >
                                 Detectar ubicación GPS
                             </button>
@@ -322,11 +321,11 @@ export const CaptureEvidence = () => {
                             </div>
                         ) : (
                             <div>
-                                <label className="block text-sm font-bold text-text-secondary mb-2">Selecciona el Reto</label>
+                                <label className="block text-xs font-bold text-[#1B1B3F] uppercase mb-1.5 tracking-wide">Selecciona la Misión</label>
                                 <select
                                     value={selectedChallenge}
                                     onChange={(e) => setSelectedChallenge(e.target.value)}
-                                    className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:ring-2 focus:ring-primary outline-none transition-all"
+                                    className="w-full p-3 rounded-xl border border-gray-200 bg-white focus:ring-2 focus:ring-primary/20 outline-none transition-all"
                                 >
                                     <option value="">-- Seleccionar Misión --</option>
                                     {challenges.map(c => (
@@ -337,11 +336,11 @@ export const CaptureEvidence = () => {
                         )}
 
                         <div>
-                            <label className="block text-sm font-bold text-text-secondary mb-2">Descripción</label>
+                            <label className="block text-xs font-bold text-[#1B1B3F] uppercase mb-1.5 tracking-wide">Descripción de Evidencia</label>
                             <textarea
                                 value={description}
                                 onChange={(e) => setDescription(e.target.value)}
-                                className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:ring-2 focus:ring-primary outline-none transition-all h-24 resize-none"
+                                className="w-full p-3 rounded-xl border border-gray-200 bg-white focus:ring-2 focus:ring-primary/20 outline-none transition-all h-24 resize-none"
                                 placeholder="Describe qué lograste con esta evidencia..."
                             />
                         </div>

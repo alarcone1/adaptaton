@@ -151,3 +151,24 @@ El sistema utiliza **Row Level Security (RLS)** en Supabase para garantizar que:
 - **Políticas de Oportunidades**:
   - **Admins**: Acceso total (CRUD).
   - **Usuarios (Estudiante/Profe/Partner)**: Acceso de solo lectura restringido a oportunidades activas (`is_active = true`).
+
+---
+
+## 7. Cambios Recientes (UI v2.0)
+Se ha completado una estandarización visual transversal en todos los módulos:
+
+### General
+*   **Identidad de Marca**: Unificación de degradados en encabezados (Purple `#4B3179` -> Teal `#42A799`) para Admin, Docente y Estudiante.
+*   **Iconografía**: Estandarización de iconos `lucide-react` para representar módulos consistentemente en Sidebar y Encabezados.
+
+### Por Módulo
+*   **Admin**:
+    *   Corrección de iconos en Dashboard y sub-páginas (`Users`, `FileText`, `LayoutGrid`).
+    *   Ajuste de colores en accesos directos para coincidir con la paleta de métricas.
+*   **Estudiante**:
+    *   Corrección del degradado del logo en el Sidebar.
+    *   Header "Hola, [Nombre]" con icono `Home`.
+*   **Docente**:
+    *   Header de curso unificado.
+*   **Aliado**:
+    *   Uso consistente de paleta en `Showcase` y `Mis Intereses`.

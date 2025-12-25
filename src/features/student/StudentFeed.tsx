@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabase'
 import type { Database } from '../../lib/database.types'
-import { Heart, MessageCircle } from 'lucide-react'
+import { Heart, MessageCircle, Newspaper } from 'lucide-react'
+import { PageHeader } from '../../components/ui/PageHeader'
 
 // Extended type to include profile relation if possible, or fetch separately
 type EvidenceWithProfile = Database['public']['Tables']['evidences']['Row'] & {
@@ -30,7 +31,10 @@ export const StudentFeed = () => {
 
     return (
         <div className="space-y-4">
-            <h1 className="text-2xl font-bold text-primary">Radar Social</h1>
+            <PageHeader
+                title="Radar Social"
+                icon={Newspaper}
+            />
             {loading ? <p>Cargando...</p> : (
                 <div className="space-y-6">
                     {feed.map((evidence) => (

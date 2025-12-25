@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabase'
 import type { Database } from '../../lib/database.types'
-import { Search, MapPin, Award } from 'lucide-react'
+import { Search, MapPin, Award, LayoutGrid } from 'lucide-react'
 import { EvidenceDetailModal } from './EvidenceDetailModal'
+import { PageHeader } from '../../components/ui/PageHeader'
 
 type EvidenceWithProfile = Database['public']['Tables']['evidences']['Row'] & {
     profiles: Database['public']['Tables']['profiles']['Row'] | null
@@ -59,10 +60,11 @@ export const PartnerShowcase = () => {
 
     return (
         <div>
-            <div className="mb-8">
-                <h1 className="text-3xl font-bold text-gray-900">La Vitrina de Talento</h1>
-                <p className="text-gray-500 mt-2">Descubre a los jóvenes que están transformando su comunidad.</p>
-            </div>
+            <PageHeader
+                title="La Vitrina de Talento"
+                subtitle="Descubre a los jóvenes que están transformando su comunidad."
+                icon={LayoutGrid}
+            />
 
             {/* Filters */}
             <div className="flex gap-4 mb-8">
@@ -71,7 +73,7 @@ export const PartnerShowcase = () => {
                     <input
                         type="text"
                         placeholder="Buscar por reto o nombre..."
-                        className="w-full pl-10 pr-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                        className="w-full pl-10 pr-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#4B3179]/20 focus:border-[#4B3179] outline-none transition-all"
                         value={filterText}
                         onChange={(e) => setFilterText(e.target.value)}
                     />
@@ -91,7 +93,7 @@ export const PartnerShowcase = () => {
                         <div
                             key={evidence.id}
                             onClick={() => setSelectedEvidence(evidence)}
-                            className="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-xl transition-all cursor-pointer relative"
+                            className="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-xl hover:border-[#4B3179] transition-all cursor-pointer relative"
                         >
                             {/* Card Image */}
                             <div className="aspect-[4/3] bg-gray-100 relative overflow-hidden">
@@ -114,7 +116,7 @@ export const PartnerShowcase = () => {
                             {/* Card Content */}
                             <div className="p-5">
                                 <div className="flex items-start justify-between mb-3">
-                                    <span className="bg-secondary/10 text-secondary text-xs font-bold px-2 py-1 rounded-md uppercase tracking-wide">
+                                    <span className="bg-[#4B3179]/10 text-[#4B3179] text-xs font-bold px-2 py-1 rounded-md uppercase tracking-wide">
                                         {(evidence as any).resource_title}
                                     </span>
                                     <div className="flex -space-x-1">

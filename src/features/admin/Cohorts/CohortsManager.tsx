@@ -130,6 +130,7 @@ export const CohortsManager = () => {
             <PageHeader
                 title="Gestión de Cohortes"
                 subtitle="Administra grupos académicos y asignaciones."
+                icon={Users}
             >
                 <Button onClick={() => {
                     setEditingId(null)

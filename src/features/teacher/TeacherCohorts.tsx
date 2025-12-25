@@ -79,8 +79,7 @@ export const TeacherCohorts = () => {
                 <PageHeader
                     title="Mis Cohortes"
                     subtitle="Gestión académica y validación de evidencias."
-                    role="Docente"
-                    roleColor="blue" // Turquoise equivalent
+                    icon={Users}
                 />
 
                 {cohorts.length === 0 ? (

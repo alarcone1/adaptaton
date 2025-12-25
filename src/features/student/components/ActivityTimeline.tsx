@@ -65,10 +65,10 @@ export const ActivityTimeline = ({ courseId, activities, getStatus, isActivityVa
                     <div key={activity.id} className="relative group">
                         {/* Timeline Node */}
                         <div className={`absolute -left-12 mt-1 rounded-full p-2 border-4 transition-all z-10 ${finalStatus === 'validated' ? 'bg-green-500 border-green-100 text-white' :
-                                finalStatus === 'submitted' ? 'bg-yellow-400 border-yellow-100 text-white' :
-                                    finalStatus === 'rejected' ? 'bg-red-500 border-red-100 text-white' :
-                                        finalStatus === 'locked' ? 'bg-gray-200 border-gray-100 text-gray-400' :
-                                            'bg-blue-500 border-blue-100 text-white'
+                            finalStatus === 'submitted' ? 'bg-yellow-400 border-yellow-100 text-white' :
+                                finalStatus === 'rejected' ? 'bg-red-500 border-red-100 text-white' :
+                                    finalStatus === 'locked' ? 'bg-gray-200 border-gray-100 text-gray-400' :
+                                        'bg-[#4B3179] border-[#4B3179]/20 text-white'
                             }`}>
                             {finalStatus === 'validated' ? <CheckCircle size={16} /> :
                                 finalStatus === 'locked' ? <Lock size={16} /> :
@@ -80,9 +80,9 @@ export const ActivityTimeline = ({ courseId, activities, getStatus, isActivityVa
 
                         {/* Content Card */}
                         <Card className={`transition-all border-l-4 ${finalStatus === 'validated' ? 'border-l-green-500 shadow-md bg-white' :
-                                finalStatus === 'rejected' ? 'border-l-red-500 shadow-md bg-white' :
-                                    finalStatus === 'locked' ? 'border-l-gray-300 bg-gray-50 opacity-70 grayscale-[0.5]' :
-                                        'border-l-blue-500 shadow-lg ring-1 ring-blue-500/20'
+                            finalStatus === 'rejected' ? 'border-l-red-500 shadow-md bg-white' :
+                                finalStatus === 'locked' ? 'border-l-gray-300 bg-gray-50 opacity-70 grayscale-[0.5]' :
+                                    'border-l-[#4B3179] shadow-lg ring-1 ring-[#4B3179]/10'
                             }`}>
                             <div className="p-5">
                                 <div className="flex justify-between items-start mb-2">
@@ -92,10 +92,10 @@ export const ActivityTimeline = ({ courseId, activities, getStatus, isActivityVa
                                     </h4>
 
                                     <span className={`text-[10px] uppercase font-bold px-2 py-1 rounded-md border ${finalStatus === 'validated' ? 'bg-green-50 text-green-700 border-green-200' :
-                                            finalStatus === 'rejected' ? 'bg-red-50 text-red-700 border-red-200' :
-                                                finalStatus === 'submitted' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' :
-                                                    finalStatus === 'locked' ? 'bg-gray-100 text-gray-500 border-gray-200' :
-                                                        'bg-blue-50 text-blue-700 border-blue-200 animate-pulse'
+                                        finalStatus === 'rejected' ? 'bg-red-50 text-red-700 border-red-200' :
+                                            finalStatus === 'submitted' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' :
+                                                finalStatus === 'locked' ? 'bg-gray-100 text-gray-500 border-gray-200' :
+                                                    'bg-[#4B3179]/10 text-[#4B3179] border-[#4B3179]/20 animate-pulse'
                                         }`}>
                                         {isLocked ? 'Bloqueado' : label}
                                     </span>
@@ -105,7 +105,7 @@ export const ActivityTimeline = ({ courseId, activities, getStatus, isActivityVa
 
                                 <div className="flex items-center gap-3">
                                     {finalStatus === 'pending' && (
-                                        <Button onClick={() => handleStart(activity.id)} className="w-full sm:w-auto shadow-blue-200 shadow-lg group-hover:shadow-blue-300 transition-all">
+                                        <Button onClick={() => handleStart(activity.id)} className="w-full sm:w-auto shadow-[#4B3179]/20 shadow-lg group-hover:shadow-[#4B3179]/30 transition-all bg-[#4B3179] hover:bg-[#3b2663]">
                                             Iniciar Reto <ArrowRight size={16} className="ml-2" />
                                         </Button>
                                     )}

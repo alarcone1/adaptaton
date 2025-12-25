@@ -6,10 +6,11 @@ interface PageHeaderProps {
     subtitle?: string;
     role?: string;
     roleColor?: 'purple' | 'blue' | 'red' | 'green' | 'gold';
+    icon?: React.ElementType;
     children?: React.ReactNode;
 }
 
-export const PageHeader: React.FC<PageHeaderProps> = ({ title, subtitle, role, roleColor = 'purple', children }) => {
+export const PageHeader: React.FC<PageHeaderProps> = ({ title, subtitle, role, roleColor = 'purple', icon: Icon = Rocket, children }) => {
     const roleColors = {
         purple: "bg-purple-100 text-purple-800 border-purple-200",
         blue: "bg-blue-100 text-blue-800 border-blue-200",
@@ -23,7 +24,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({ title, subtitle, role, r
             <div>
                 <div className="flex items-center gap-3 mb-1">
                     <div className="bg-primary/10 p-2 rounded-lg">
-                        <Rocket className="text-primary" size={28} />
+                        <Icon className="text-primary" size={28} />
                     </div>
                     <h1 className="text-3xl font-bold text-primary">{title}</h1>
                     {role && (

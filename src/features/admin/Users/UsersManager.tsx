@@ -5,7 +5,7 @@ import { PageHeader } from '../../../components/ui/PageHeader'
 import { Card } from '../../../components/ui/Card'
 import { Button } from '../../../components/ui/Button'
 import { Badge } from '../../../components/ui/Badge'
-import { Trash2, Edit2, Plus, MoreVertical, Mail, Filter, Layers } from 'lucide-react'
+import { Trash2, Edit2, Plus, MoreVertical, Mail, Filter, Layers, Users } from 'lucide-react'
 import { Modal, ModalFooter } from '../../../components/ui/Modal'
 import { CohortAssignmentModal } from './CohortAssignmentModal'
 
@@ -205,7 +205,11 @@ export const UsersManager = () => {
     return (
 
         <div className="p-4 md:p-8 max-w-7xl mx-auto min-h-screen space-y-6" onClick={() => setActiveMenu(null)}>
-            <PageHeader title="Gestión de Usuarios" subtitle="Administra estudiantes, docentes y más.">
+            <PageHeader
+                title="Gestión de Usuarios"
+                subtitle="Administra estudiantes, docentes y más."
+                icon={Users}
+            >
                 <Button onClick={() => { setEditingId(null); resetForm(); setShowUserForm(true) }}>
                     <Plus size={18} className="mr-2" /> Nuevo Usuario
                 </Button>

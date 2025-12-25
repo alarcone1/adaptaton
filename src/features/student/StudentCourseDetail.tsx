@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../lib/AuthContext'
-import { Badge } from '../../components/ui/Badge'
 import { ArrowLeft, BookOpen, Clock } from 'lucide-react'
 import { ActivityTimeline } from './components/ActivityTimeline'
 
@@ -86,12 +85,17 @@ export const StudentCourseDetail = () => {
             <div className="bg-gradient-to-br from-primary to-primary-light text-white p-6 rounded-2xl shadow-lg relative overflow-hidden">
                 <div className="relative z-10">
                     <div className="flex justify-between items-start">
-                        <Badge variant="green" className="mb-2 bg-accent-gold text-primary border-none">{course.cohort?.name}</Badge>
+                        <span className="mb-2 px-3 py-1 rounded bg-white text-[#4B3179] text-xs font-bold shadow-sm">{course.cohort?.name}</span>
                         <span className="bg-white/20 px-3 py-1 rounded-full text-xs font-bold backdrop-blur-sm">
                             {course.subject?.credits} Créditos
                         </span>
                     </div>
-                    <h1 className="text-2xl md:text-3xl font-black mb-2">{course.subject?.name}</h1>
+                    <div className="flex items-center gap-3 mb-2">
+                        <div className="bg-white/20 p-2 rounded-lg backdrop-blur-sm">
+                            <BookOpen className="text-white" size={32} />
+                        </div>
+                        <h1 className="text-2xl md:text-3xl font-black">{course.subject?.name}</h1>
+                    </div>
                     <p className="opacity-90 max-w-xl">{course.subject?.description}</p>
 
                     <div className="flex items-center gap-2 mt-6 pt-6 border-t border-white/10">

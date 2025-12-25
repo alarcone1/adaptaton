@@ -24,7 +24,7 @@ export const StudentLayout = () => {
             {/* Sidebar - Desktop */}
             <aside className="w-64 bg-white border-r border-gray-200 hidden md:flex flex-col fixed h-full z-10">
                 <div className="p-6">
-                    <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                    <h1 className="text-2xl font-bold bg-gradient-to-r from-[#4B3179] to-[#42A799] bg-clip-text text-transparent">
                         Adaptatón
                     </h1>
                     <p className="text-xs text-gray-500 mt-1 uppercase tracking-wider">Estudiante</p>
@@ -38,7 +38,7 @@ export const StudentLayout = () => {
                                 key={item.path}
                                 to={item.path}
                                 className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${isActive
-                                    ? 'bg-blue-50 text-blue-600 font-medium'
+                                    ? 'bg-[#4B3179]/10 text-[#4B3179] font-bold'
                                     : 'text-gray-600 hover:bg-gray-100'
                                     }`}
                             >
@@ -69,7 +69,7 @@ export const StudentLayout = () => {
 
             {/* Mobile Header */}
             <div className="md:hidden fixed top-0 w-full bg-white z-20 border-b px-4 py-3 flex justify-between items-center">
-                <span className="font-bold text-blue-600">Adaptatón Student</span>
+                <span className="font-bold text-[#4B3179]">Adaptatón Student</span>
                 <button onClick={handleSignOut}><LogOut size={20} /></button>
             </div>
 
@@ -85,7 +85,7 @@ export const StudentLayout = () => {
                 {navItems.map((item) => {
                     const isActive = location.pathname.startsWith(item.path)
                     return (
-                        <Link key={item.path} to={item.path} className={`flex flex-col items-center gap-1 min-w-[60px] ${isActive ? 'text-blue-600' : 'text-gray-400'}`}>
+                        <Link key={item.path} to={item.path} className={`flex flex-col items-center gap-1 min-w-[60px] ${isActive ? 'text-[#4B3179] font-bold' : 'text-gray-400'}`}>
                             <item.icon size={24} />
                             <span className="text-[10px] truncate w-full text-center">{item.label}</span>
                         </Link>

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../../../lib/supabase'
 import { Button } from '../../../components/ui/Button'
 import { Card } from '../../../components/ui/Card'
-import { Plus, Edit2, Trash2, Globe, Users, Power, Briefcase, GraduationCap, DollarSign, Star } from 'lucide-react'
+import { Plus, Edit2, Trash2, Globe, Users, Power, Briefcase, GraduationCap, DollarSign, Star, Activity } from 'lucide-react'
 import { PageHeader } from '../../../components/ui/PageHeader'
 
 
@@ -86,6 +86,7 @@ export const OpportunitiesManager = () => {
             <PageHeader
                 title="Gestor de Oportunidades"
                 subtitle="El Concierge: Gestiona ofertas y ayudas para los estudiantes."
+                icon={Activity}
             >
                 <Button onClick={() => { setShowForm(true); setEditingId(null); setFormData({ title: '', description: '', partner_name: '', target_cohort_type: 'all', is_active: true }) }}>
                     <Plus size={18} /> Nueva Oportunidad

@@ -87,7 +87,7 @@ export const EvidenceDetailModal = ({ evidence, onClose }: Props) => {
                         <div className="space-y-6">
                             <div>
                                 <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">El Reto</h4>
-                                <h2 className="text-xl font-bold text-secondary">{evidence.resource_title}</h2>
+                                <h2 className="text-xl font-bold text-[#4B3179]">{evidence.resource_title}</h2>
                             </div>
 
                             <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
@@ -119,7 +119,7 @@ export const EvidenceDetailModal = ({ evidence, onClose }: Props) => {
                                 <button
                                     onClick={handleCreateLead}
                                     disabled={status === 'submitting'}
-                                    className="w-full py-4 bg-secondary text-white rounded-xl font-bold text-lg shadow-lg hover:bg-secondary/90 hover:scale-[1.02] transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                                    className="w-full py-4 bg-gradient-to-r from-[#4B3179] to-[#42A799] text-white rounded-xl font-bold text-lg shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
                                 >
                                     {status === 'submitting' ? (
                                         'Procesando...'

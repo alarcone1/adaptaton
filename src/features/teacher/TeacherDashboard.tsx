@@ -66,8 +66,7 @@ export const TeacherDashboard = () => {
             <PageHeader
                 title="Mis Cursos"
                 subtitle="Gestión académica y validación de evidencias por materia."
-                role="Docente"
-                roleColor="blue"
+                icon={BookOpen}
             />
 
             {courses.length === 0 ? (
@@ -84,13 +83,13 @@ export const TeacherDashboard = () => {
                             onClick={() => navigate(`/teacher/course/${course.id}`)}
                             className="group cursor-pointer transform hover:-translate-y-1 transition-all duration-300"
                         >
-                            <Card className="h-full border-t-4 border-t-primary p-6 hover:shadow-xl relative overflow-hidden">
+                            <Card className="h-full border-t-4 border-t-primary p-6 hover:shadow-xl hover:border-primary relative overflow-hidden transition-colors">
                                 <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
                                     <BookOpen size={64} />
                                 </div>
 
                                 <div className="flex justify-between items-start mb-4">
-                                    <div className="h-12 w-12 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-xl">
+                                    <div className="h-12 w-12 rounded-xl bg-purple-100 flex items-center justify-center text-primary font-bold text-xl">
                                         {course.subject.name.substring(0, 2).toUpperCase()}
                                     </div>
                                     <div className="px-3 py-1 bg-gray-100 rounded-full text-xs font-bold text-gray-500">

@@ -3,13 +3,15 @@ import { Card } from '../../components/ui/Card'
 import { Button } from '../../components/ui/Button'
 import { Badge } from '../../components/ui/Badge'
 import { PageHeader } from '../../components/ui/PageHeader'
+import { Modal, ModalFooter } from '../../components/ui/Modal'
 
-import { Briefcase, Building2, MapPin, Calendar, ArrowUpRight } from 'lucide-react'
+import { Briefcase, Building2, MapPin, Calendar, ArrowUpRight, Rocket } from 'lucide-react'
 import { useAuth } from '../../lib/AuthContext'
 
 export const StudentOpportunities = () => {
     const { user } = useAuth()
     const [searchTerm, setSearchTerm] = useState('')
+    const [selectedOpp, setSelectedOpp] = useState<any>(null)
 
     // Mock Data (Replace with DB fetch if needed later)
     const opportunities = [
@@ -62,8 +64,7 @@ export const StudentOpportunities = () => {
             <PageHeader
                 title="Oportunidades"
                 subtitle="Conecta con el ecosistema productivo."
-                role="ESTUDIANTE"
-                roleColor="blue"
+                icon={Rocket}
             />
 
             {/* Search and Filter (Visual only for now) */}
@@ -85,15 +86,19 @@ export const StudentOpportunities = () => {
 
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 {opportunities.map(opp => (
-                    <Card key={opp.id} className="flex flex-col group hover:border-primary/30 p-6">
+                    <Card
+                        key={opp.id}
+                        onClick={() => setSelectedOpp(opp)}
+                        className="flex flex-col group relative overflow-hidden transition-all duration-300 border-t-4 border-t-[#4B3179] hover:border-[#4B3179] hover:shadow-xl hover:scale-[1.02] cursor-pointer p-6"
+                    >
                         <div className="flex justify-between items-start mb-4">
-                            <div className="bg-primary/5 p-3 rounded-xl group-hover:bg-primary/10 transition-colors">
-                                <Building2 className="text-primary" size={24} />
+                            <div className="bg-purple-50 text-primary p-3 rounded-xl group-hover:bg-primary group-hover:text-white transition-colors duration-300">
+                                <Building2 size={24} />
                             </div>
                             <Badge variant="purple">{opp.type}</Badge>
                         </div>
 
-                        <h3 className="font-bold text-lg mb-1 leading-tight">{opp.title}</h3>
+                        <h3 className="font-bold text-lg mb-1 leading-tight group-hover:text-primary transition-colors">{opp.title}</h3>
                         <p className="text-sm text-text-secondary font-medium mb-4">{opp.partner}</p>
 
                         <div className="space-y-2 mb-6 flex-grow">
@@ -113,17 +118,53 @@ export const StudentOpportunities = () => {
                             ))}
                         </div>
 
-                        <Button
-                            fullWidth
-                            variant="primary"
-                            className="mt-auto"
-                            onClick={() => handleApply(opp.id, opp.partner)}
-                        >
-                            Me Interesa <ArrowUpRight size={16} />
-                        </Button>
+                        {/* Visual indicator that it's clickable */}
+                        <div className="mt-auto text-xs font-bold text-[#4B3179] flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            Ver Detalles <ArrowUpRight size={14} />
+                        </div>
                     </Card>
                 ))}
             </div>
+
+            {/* Modal for Details */}
+            <Modal
+                isOpen={!!selectedOpp}
+                onClose={() => setSelectedOpp(null)}
+                title={selectedOpp?.title || ''}
+                description={selectedOpp?.partner || ''}
+            >
+                <div>
+                    <div className="flex gap-4 mb-6">
+                        <div className="p-4 bg-purple-50 rounded-2xl text-primary">
+                            <Building2 size={32} />
+                        </div>
+                        <div>
+                            <Badge variant="purple" className="mb-2 inline-block">
+                                {selectedOpp?.type}
+                            </Badge>
+                            <h4 className="font-bold text-gray-800">Detalles de la Oportunidad</h4>
+                            <p className="text-sm text-gray-500">{selectedOpp?.location}</p>
+                        </div>
+                    </div>
+
+                    <div className="bg-gray-50 p-6 rounded-2xl border border-gray-100 mb-6">
+                        <h5 className="font-bold text-sm text-gray-900 uppercase tracking-wide mb-3">Información</h5>
+                        <p className="text-gray-700 leading-relaxed">
+                            Esta es una gran oportunidad para desarrollar tus habilidades en {selectedOpp?.tags.join(', ')}.
+                            La organización {selectedOpp?.partner} busca estudiantes comprometidos.
+                        </p>
+                    </div>
+
+                    <ModalFooter
+                        onCancel={() => setSelectedOpp(null)}
+                        saveLabel="Aplicar Ahora"
+                        onSave={() => {
+                            handleApply(selectedOpp.id, selectedOpp.partner)
+                            setSelectedOpp(null)
+                        }}
+                    />
+                </div>
+            </Modal>
         </div>
     )
 }

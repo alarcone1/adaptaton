@@ -5,7 +5,8 @@ import { useAuth } from '../../lib/AuthContext'
 import { Card } from '../../components/ui/Card'
 import { Button } from '../../components/ui/Button'
 import { Badge } from '../../components/ui/Badge'
-import { BookOpen, ArrowRight, User } from 'lucide-react'
+import { BookOpen, ArrowRight, User, Home } from 'lucide-react'
+import { PageHeader } from '../../components/ui/PageHeader'
 
 export const StudentHome = () => {
     const { session } = useAuth()
@@ -14,6 +15,7 @@ export const StudentHome = () => {
     const [loading, setLoading] = useState(true)
     const [progress, setProgress] = useState(0)
     const [pointsEarned, setPointsEarned] = useState(0)
+    const [studentName, setStudentName] = useState('Estudiante')
 
     useEffect(() => {
         if (session?.user) fetchData()
@@ -25,7 +27,11 @@ export const StudentHome = () => {
             const userId = session?.user?.id
             if (!userId) return
 
-            // 1. Fetch Enrolled Courses
+            // 1. Fetch Student Name
+            const { data: profile } = await supabase.from('profiles').select('full_name').eq('id', userId).single()
+            if (profile) setStudentName(profile.full_name || 'Estudiante')
+
+            // 2. Fetch Enrolled Courses
             const { data: enrollments } = await supabase
                 .from('course_enrollments')
                 .select(`
@@ -51,7 +57,7 @@ export const StudentHome = () => {
 
             setCourses(enrollments || [])
 
-            // 2. Fetch Stats (Simplified for now - kept existing logic structure)
+            // 3. Fetch Stats (Simplified for now - kept existing logic structure)
             const { data: evidences } = await supabase
                 .from('evidences')
                 .select('challenge_id')
@@ -73,10 +79,11 @@ export const StudentHome = () => {
 
     return (
         <div className="p-4 md:p-6 space-y-8 max-w-4xl mx-auto">
-            <div className="mb-2">
-                <h1 className="text-2xl font-bold text-primary">Hola, Estudiante</h1>
-                <p className="text-text-secondary">Tu formación académica activa.</p>
-            </div>
+            <PageHeader
+                title={`Hola, ${studentName}`}
+                subtitle="Tu formación académica activa."
+                icon={Home}
+            />
 
             {/* Progress Section - LUXURY Card */}
             <Card luxury className="bg-gradient-to-r from-primary to-primary-light text-white relative overflow-hidden !border-accent-gold p-6">
@@ -103,7 +110,7 @@ export const StudentHome = () => {
 
             <section>
                 <div className="flex items-center gap-2 mb-4">
-                    <div className="p-2 bg-blue-100 rounded-full text-blue-600"><BookOpen size={20} /></div>
+                    <div className="p-2 bg-[#1B1B3F]/10 rounded-full text-[#1B1B3F]"><BookOpen size={20} /></div>
                     <h2 className="text-xl font-bold text-primary">Mis Cursos</h2>
                 </div>
 
@@ -120,9 +127,9 @@ export const StudentHome = () => {
                 ) : (
                     <div className="grid gap-4 md:grid-cols-2">
                         {courses.map((enrollment: any) => (
-                            <Card key={enrollment.id} className="flex flex-col h-full hover:shadow-lg transition-shadow border-t-4 border-t-blue-500 p-5">
+                            <Card key={enrollment.id} onClick={() => navigate(`/student/course/${enrollment.course?.id}`)} className="flex flex-col h-full hover:shadow-lg transition-shadow border-t-4 border-t-[#4B3179] hover:border-[#4B3179] p-5 cursor-pointer group">
                                 <div className="flex justify-between items-start mb-2">
-                                    <div className="bg-blue-50 text-blue-700 text-xs font-bold px-2 py-1 rounded uppercase mb-2 w-fit">
+                                    <div className="bg-[#4B3179]/10 text-[#4B3179] text-xs font-bold px-2 py-1 rounded uppercase mb-2 w-fit">
                                         {enrollment.course?.cohort?.name || 'Sin Cohorte'}
                                     </div>
                                     <Badge variant="green" className="uppercase text-[10px] tracking-wider">Activo</Badge>

@@ -3,7 +3,7 @@ import { supabase } from '../../../lib/supabase'
 
 import { Card } from '../../../components/ui/Card'
 import { Button } from '../../../components/ui/Button'
-import { Book, Plus, Edit2, Trash2, X } from 'lucide-react'
+import { Book, Plus, Edit2, Trash2, X, BookOpen } from 'lucide-react'
 import { Modal, ModalFooter } from '../../../components/ui/Modal'
 
 import { PageHeader } from '../../../components/ui/PageHeader'
@@ -106,6 +106,7 @@ export const SubjectsManager = () => {
             <PageHeader
                 title="Catálogo de Materias"
                 subtitle="Define las áreas de conocimiento disponibles para la academia."
+                icon={BookOpen}
             >
                 <Button onClick={openModal}>
                     <Plus size={20} className="mr-2" /> Nueva Materia

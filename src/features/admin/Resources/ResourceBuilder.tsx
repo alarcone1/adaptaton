@@ -107,7 +107,7 @@ export const ResourceBuilder = () => {
                         <h3 className="font-bold text-lg mb-4 text-primary">Información Básica</h3>
                         <div className="space-y-4">
                             <div>
-                                <label className="block text-xs font-bold text-text-secondary uppercase mb-1">Título del Recurso</label>
+                                <label className="block text-xs font-bold text-[#1B1B3F] uppercase mb-1.5 tracking-wide">Título del Recurso</label>
                                 <input
                                     value={title}
                                     onChange={e => setTitle(e.target.value)}
@@ -116,7 +116,7 @@ export const ResourceBuilder = () => {
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs font-bold text-text-secondary uppercase mb-1">Descripción / Instrucciones</label>
+                                <label className="block text-xs font-bold text-[#1B1B3F] uppercase mb-1.5 tracking-wide">Descripción / Instrucciones</label>
                                 <textarea
                                     value={description}
                                     onChange={e => setDescription(e.target.value)}
@@ -125,7 +125,7 @@ export const ResourceBuilder = () => {
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs font-bold text-text-secondary uppercase mb-1">URL del Recurso (PDF/Video)</label>
+                                <label className="block text-xs font-bold text-[#1B1B3F] uppercase mb-1.5 tracking-wide">URL del Recurso (PDF/Video)</label>
                                 <input
                                     value={resourceUrl}
                                     onChange={e => setResourceUrl(e.target.value)}
@@ -169,7 +169,7 @@ export const ResourceBuilder = () => {
 
                                     <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-3">
                                         <div className="space-y-1">
-                                            <label className="text-[10px] font-bold text-text-secondary uppercase">Etiqueta del Campo</label>
+                                            <label className="text-[10px] font-bold text-[#1B1B3F] uppercase mb-1 tracking-wide">Etiqueta del Campo</label>
                                             <input
                                                 value={metric.label}
                                                 onChange={e => updateMetric(index, 'label', e.target.value)}
@@ -178,7 +178,7 @@ export const ResourceBuilder = () => {
                                             />
                                         </div>
                                         <div className="space-y-1">
-                                            <label className="text-[10px] font-bold text-text-secondary uppercase">Tipo de Dato</label>
+                                            <label className="text-[10px] font-bold text-[#1B1B3F] uppercase mb-1 tracking-wide">Tipo de Dato</label>
                                             <select
                                                 value={metric.type}
                                                 onChange={e => updateMetric(index, 'type', e.target.value)}

@@ -4,7 +4,8 @@ import { supabase } from '../../lib/supabase'
 
 import { Card } from '../../components/ui/Card'
 import { Button } from '../../components/ui/Button'
-import { Calendar, CheckCircle, Users, ArrowLeft, Plus, Trash2, ExternalLink, GraduationCap, Edit2, ClipboardList } from 'lucide-react'
+import { Calendar, CheckCircle, Users, ArrowLeft, Plus, Trash2, ExternalLink, GraduationCap, Edit2, ClipboardList, BookOpen } from 'lucide-react'
+import { PageHeader } from '../../components/ui/PageHeader'
 
 // Sub-components
 const PlanningTab = ({ courseId, cohortId }: { courseId: string, cohortId?: string }) => {
@@ -100,7 +101,7 @@ const PlanningTab = ({ courseId, cohortId }: { courseId: string, cohortId?: stri
 
             <div className="space-y-4">
                 {activities.map(activity => (
-                    <Card key={activity.id} className="p-4 flex flex-col md:flex-row gap-4 justify-between items-start md:items-center">
+                    <Card key={activity.id} className="p-4 flex flex-col md:flex-row gap-4 justify-between items-start md:items-center border-l-4 border-l-primary hover:border-primary transition-all group">
                         <div>
                             <h4 className="font-bold text-primary text-lg">{activity.resource?.title}</h4>
                             <p className="text-gray-500 text-sm mb-2">{activity.custom_instructions || activity.resource?.base_description}</p>
@@ -110,7 +111,7 @@ const PlanningTab = ({ courseId, cohortId }: { courseId: string, cohortId?: stri
                                     {activity.due_date ? new Date(activity.due_date).toLocaleDateString() : 'Sin fecha límite'}
                                 </span>
                                 {activity.resource?.resource_url && (
-                                    <a href={activity.resource.resource_url} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-blue-500 hover:underline">
+                                    <a href={activity.resource.resource_url} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-primary hover:underline">
                                         <ExternalLink size={14} /> Ver Recurso
                                     </a>
                                 )}
@@ -119,7 +120,7 @@ const PlanningTab = ({ courseId, cohortId }: { courseId: string, cohortId?: stri
                         <div className="flex gap-2">
                             <button
                                 onClick={() => handleOpenEdit(activity)}
-                                className="p-2 text-gray-300 hover:text-blue-500 hover:bg-blue-50 rounded-full transition-colors"
+                                className="p-2 text-gray-300 hover:text-primary hover:bg-primary/10 rounded-full transition-colors"
                             >
                                 <Edit2 size={18} />
                             </button>
@@ -423,7 +424,7 @@ const GradebookTab = ({ courseId }: { courseId: string }) => {
                     {data.students.map(student => (
                         <tr key={student.id} className="hover:bg-gray-50">
                             <td className="p-4 flex items-center gap-3 sticky left-0 bg-white z-10">
-                                <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs font-bold">
+                                <div className="w-8 h-8 rounded-full bg-purple-100 text-primary flex items-center justify-center text-xs font-bold">
                                     {student.full_name?.[0]}
                                 </div>
                                 <span className="font-medium text-sm text-gray-700 truncate max-w-[150px]">{student.full_name}</span>
@@ -672,10 +673,10 @@ const StudentsTab = ({ courseId }: { courseId: string }) => {
                     </thead>
                     <tbody className="divide-y divide-gray-100 bg-white">
                         {filteredStudents.map((item: any) => (
-                            <tr key={item.id} className="hover:bg-blue-50/30 transition-colors group">
+                            <tr key={item.id} className="hover:bg-purple-50/30 transition-colors group">
                                 <td className="p-4">
                                     <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-sm shadow-sm overflow-hidden">
+                                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-100 to-primary/10 text-primary flex items-center justify-center font-bold text-sm shadow-sm overflow-hidden">
                                             {item.student.avatar_url ? (
                                                 <img src={item.student.avatar_url} className="w-full h-full object-cover" />
                                             ) : (
@@ -765,14 +766,12 @@ export const TeacherCourseManager = () => {
                 <ArrowLeft size={18} /> Volver a Mis Cursos
             </button>
 
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-4">
-                <div>
-                    <div className="flex items-center gap-2 mb-1">
-                        <span className="bg-blue-100 text-blue-700 text-xs font-bold px-2 py-0.5 rounded uppercase">{course.cohort?.name}</span>
-                    </div>
-                    <h1 className="text-3xl font-black text-gray-800">{course.subject?.name}</h1>
-                    <p className="text-gray-500">{course.subject?.description}</p>
-                </div>
+            <div className="mb-6">
+                <PageHeader
+                    title={course.subject?.name}
+                    subtitle={`${course.cohort?.name} • ${course.subject?.description}`}
+                    icon={BookOpen}
+                />
             </div>
 
             {/* Tabs */}

@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { PageHeader } from '../../components/ui/PageHeader'
 import { Card } from '../../components/ui/Card'
-import { Users, FileText, Activity, BookOpen, ExternalLink, Zap, Clock } from 'lucide-react'
+import { Users, FileText, Activity, BookOpen, ExternalLink, Zap, Clock, LayoutGrid } from 'lucide-react'
 
 export const AdminDashboard = () => {
     const navigate = useNavigate()
@@ -74,7 +74,7 @@ export const AdminDashboard = () => {
                     description: `${u.full_name} se unió como ${u.role}`,
                     date: new Date(u.created_at!),
                     icon: Users,
-                    color: 'bg-blue-100 text-blue-600'
+                    color: 'bg-[#66AD9D]/10 text-[#66AD9D]'
                 })),
                 ...(newEvidence || []).map(e => ({
                     id: e.id,
@@ -108,6 +108,7 @@ export const AdminDashboard = () => {
             <PageHeader
                 title="Torre de Control"
                 subtitle="Visión global del ecosistema de aprendizaje."
+                icon={LayoutGrid}
             />
 
             {/* Stats Overview */}
@@ -115,7 +116,7 @@ export const AdminDashboard = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
 
                 {/* 1. Usuarios - #66AD9D */}
-                <Card className="relative overflow-hidden group hover:shadow-2xl transition-all duration-300 border-none bg-[#66AD9D] text-white">
+                <Card onClick={() => navigate('/admin/users')} className="relative overflow-hidden group hover:shadow-2xl transition-all duration-300 border-none bg-[#66AD9D] text-white cursor-pointer">
                     <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity transform group-hover:scale-110 duration-500">
                         <Users size={80} />
                     </div>
@@ -134,7 +135,7 @@ export const AdminDashboard = () => {
                 </Card>
 
                 {/* 2. Recursos - #E8BD47 */}
-                <Card className="relative overflow-hidden group hover:shadow-2xl transition-all duration-300 border-none bg-[#E8BD47] text-white">
+                <Card onClick={() => navigate('/admin/resources')} className="relative overflow-hidden group hover:shadow-2xl transition-all duration-300 border-none bg-[#E8BD47] text-white cursor-pointer">
                     <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity transform group-hover:scale-110 duration-500">
                         <FileText size={80} />
                     </div>
@@ -153,7 +154,7 @@ export const AdminDashboard = () => {
                 </Card>
 
                 {/* 3. Oportunidades - #E49744 */}
-                <Card className="relative overflow-hidden group hover:shadow-2xl transition-all duration-300 border-none bg-[#E49744] text-white">
+                <Card onClick={() => navigate('/admin/opportunities')} className="relative overflow-hidden group hover:shadow-2xl transition-all duration-300 border-none bg-[#E49744] text-white cursor-pointer">
                     <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity transform group-hover:scale-110 duration-500">
                         <Activity size={80} />
                     </div>
@@ -172,7 +173,7 @@ export const AdminDashboard = () => {
                 </Card>
 
                 {/* 4. Cohortes - #D45A4E */}
-                <Card className="relative overflow-hidden group hover:shadow-2xl transition-all duration-300 border-none bg-[#D45A4E] text-white">
+                <Card onClick={() => navigate('/admin/cohorts')} className="relative overflow-hidden group hover:shadow-2xl transition-all duration-300 border-none bg-[#D45A4E] text-white cursor-pointer">
                     <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity transform group-hover:scale-110 duration-500">
                         <Users size={80} />
                     </div>
@@ -191,7 +192,7 @@ export const AdminDashboard = () => {
                 </Card>
 
                 {/* 5. Materias (Moved Up) - #1B1B3F */}
-                <Card className="relative overflow-hidden group hover:shadow-2xl transition-all duration-300 border-none bg-[#1B1B3F] text-white">
+                <Card onClick={() => navigate('/admin/subjects')} className="relative overflow-hidden group hover:shadow-2xl transition-all duration-300 border-none bg-[#1B1B3F] text-white cursor-pointer">
                     <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity transform group-hover:scale-110 duration-500">
                         <BookOpen size={80} />
                     </div>
@@ -248,28 +249,28 @@ export const AdminDashboard = () => {
                     </div>
 
                     <div className="space-y-4">
-                        <button onClick={() => navigate('/admin/users')} className="w-full p-4 bg-white border border-gray-200 rounded-2xl hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 transition-all text-left flex items-start gap-4 group relative overflow-hidden">
+                        <button onClick={() => navigate('/admin/users')} className="w-full p-4 bg-white border border-gray-200 rounded-2xl hover:border-[#66AD9D]/50 hover:shadow-lg hover:shadow-[#66AD9D]/5 transition-all text-left flex items-start gap-4 group relative overflow-hidden">
                             <div className="absolute top-0 right-0 p-3 opacity-0 group-hover:opacity-100 transition-opacity">
                                 <ExternalLink size={16} className="text-gray-400" />
                             </div>
-                            <div className="p-3 bg-blue-50 text-blue-600 rounded-xl group-hover:scale-110 transition-transform duration-300">
+                            <div className="p-3 bg-[#66AD9D]/10 text-[#66AD9D] rounded-xl group-hover:scale-110 transition-transform duration-300">
                                 <Users size={22} />
                             </div>
                             <div>
-                                <h4 className="font-bold text-gray-800 group-hover:text-primary transition-colors">Gestionar Usuarios</h4>
+                                <h4 className="font-bold text-gray-800 group-hover:text-[#66AD9D] transition-colors">Gestionar Usuarios</h4>
                                 <p className="text-xs text-gray-500 mt-1 leading-relaxed">Administración de roles, altas y bajas de estudiantes.</p>
                             </div>
                         </button>
 
-                        <button onClick={() => navigate('/admin/cohorts')} className="w-full p-4 bg-white border border-gray-200 rounded-2xl hover:border-indigo-500/50 hover:shadow-lg hover:shadow-indigo-500/5 transition-all text-left flex items-start gap-4 group relative overflow-hidden">
+                        <button onClick={() => navigate('/admin/cohorts')} className="w-full p-4 bg-white border border-gray-200 rounded-2xl hover:border-[#D45A4E]/50 hover:shadow-lg hover:shadow-[#D45A4E]/5 transition-all text-left flex items-start gap-4 group relative overflow-hidden">
                             <div className="absolute top-0 right-0 p-3 opacity-0 group-hover:opacity-100 transition-opacity">
                                 <ExternalLink size={16} className="text-gray-400" />
                             </div>
-                            <div className="p-3 bg-indigo-50 text-indigo-600 rounded-xl group-hover:scale-110 transition-transform duration-300">
+                            <div className="p-3 bg-[#D45A4E]/10 text-[#D45A4E] rounded-xl group-hover:scale-110 transition-transform duration-300">
                                 <Users size={22} />
                             </div>
                             <div>
-                                <h4 className="font-bold text-gray-800 group-hover:text-indigo-600 transition-colors">Gestionar Grupos</h4>
+                                <h4 className="font-bold text-gray-800 group-hover:text-[#D45A4E] transition-colors">Gestionar Grupos</h4>
                                 <p className="text-xs text-gray-500 mt-1 leading-relaxed">Creación de cohortes y asignación de profesores.</p>
                             </div>
                         </button>

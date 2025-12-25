@@ -2,8 +2,9 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import type { Database } from '../../lib/database.types'
-import { Clock, CheckCircle, XCircle } from 'lucide-react'
+import { Clock, CheckCircle, XCircle, Heart } from 'lucide-react'
 import { useAuth } from '../../lib/AuthContext'
+import { PageHeader } from '../../components/ui/PageHeader'
 
 type LeadWithStudent = Database['public']['Tables']['leads']['Row'] & {
     student: Database['public']['Tables']['profiles']['Row'] | null
@@ -56,10 +57,11 @@ export const MyLeads = () => {
 
     return (
         <div>
-            <div className="mb-8">
-                <h1 className="text-3xl font-bold text-gray-900">Mis Intereses</h1>
-                <p className="text-gray-500 mt-2">Seguimiento a los talentos con los que has conectado.</p>
-            </div>
+            <PageHeader
+                title="Mis Intereses"
+                subtitle="Seguimiento a los talentos con los que has conectado."
+                icon={Heart}
+            />
 
             {loading ? (
                 <div className="space-y-4">
