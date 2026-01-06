@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Explorador Ágil - Sabiduría en Movimiento</title>
+    <meta name="description" content="Plataforma digital del Explorador Ágil: mentoría, viajes pausados y crónicas vivas de Colombia">
+    <meta name="keywords" content="viajes, camper, Colombia, mentoría, jubilación activa, iCar 03">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav id="navbar">
+        <div class="nav-container">
+            <h1 class="logo">Explorador Ágil</h1>
+            <ul class="nav-links">
+                <li><a href="#manifiesto">Manifiesto</a></li>
+                <li><a href="#mapa">Mapa Social</a></li>
+                <li><a href="#cronicas">Crónicas</a></li>
+                <li><a href="#herramientas">Herramientas</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <section id="manifiesto" class="section">
+        <div class="hero-container">
+            <div class="hero-text">
+                <h2>El Manifiesto del Explorador Ágil</h2>
+                <p>En el corazón de cada viaje hay una transformación. No se trata solo de llegar a un destino, sino de convertirse en el camino.</p>
+                <p>El propósito de jubilado: una vida activa, llena de aprendizaje continuo y conexión humana.</p>
+                <p>El Viaje Pausado: tomarse el tiempo para reflexionar, para conectar con el presente.</p>
+                <p>El Rompehielos Eléctrico: el vehículo que inicia conversaciones, que rompe barreras sociales.</p>
+            </div>
+            <div class="hero-image">
+                <img src="https://via.placeholder.com/1200x800/151F3B/FFFFFF?text=Paisaje+Colombiano" alt="Paisaje colombiano con iCar 03">
+            </div>
+        </div>
+    </section>
+
+    <section id="mapa" class="section">
+        <h2>El Mapa Social de Colombia</h2>
+        <p>Explora el ecosistema camper colombiano: Nodos Formales, Oasis Informales y Conexiones Rurales.</p>
+        <div id="map"></div>
+    </section>
+
+    <section id="cronicas" class="section">
+        <h2>La Crónica Viva</h2>
+        <p>Historias del camino, compartidas con el corazón.</p>
+        <div class="filter-buttons">
+            <button class="filter-btn active" data-category="all">Todas</button>
+            <button class="filter-btn" data-category="solo">Viajando Solo</button>
+            <button class="filter-btn" data-category="hijo">Con mi Hijo</button>
+            <button class="filter-btn" data-category="esposa">Con mi Esposa</button>
+            <button class="filter-btn" data-category="juntos">Los Tres Juntos</button>
+        </div>
+        <div id="blog-feed" class="blog-grid">
+            <!-- Blog posts will be populated by JavaScript -->
+        </div>
+    </section>
+
+    <section id="herramientas" class="section">
+        <h2>La Caja de Herramientas del Explorador</h2>
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="equipo">El Equipo</button>
+            <button class="tab-btn" data-tab="biblioteca">La Biblioteca Digital</button>
+            <button class="tab-btn" data-tab="brujula">La Brújula Legal</button>
+        </div>
+        <div id="equipo" class="tab-content active">
+            <div class="accordion">
+                <div class="accordion-item">
+                    <button class="accordion-header">Módulo 1: El Soporte Vital Eléctrico</button>
+                    <div class="accordion-content">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Elemento</th>
+                                    <th>Indispensable (1-5)</th>
+                                    <th>Descripción</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Aplicaciones de Carga (Digitales)</td>
+                                    <td>1</td>
+                                    <td>PlugShare, Terpel Voltex, Enel X Way, Blink, etc. Son su "mapa de ruta" digital.</td>
+                                </tr>
+                                <tr>
+                                    <td>Adaptador de Carga Nivel 1</td>
+                                    <td>1</td>
+                                    <td>El cargador original del auto para enchufe doméstico.</td>
+                                </tr>
+                                <!-- Add more rows as needed -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <!-- Add more accordion items for other modules -->
+            </div>
+        </div>
+        <div id="biblioteca" class="tab-content">
+            <p>Recomendaciones de herramientas y creadores de contenido indispensables.</p>
+            <!-- Content for biblioteca -->
+        </div>
+        <div id="brujula" class="tab-content">
+            <p>Consejos prácticos para navegar el entorno legal colombiano.</p>
+            <!-- Content for brujula -->
+        </div>
+    </section>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<!-- Chosen Palette: Warm Neutrals (Beige/Amber) -->
+<!-- Application Structure Plan: Una aplicación de una sola página basada en secciones. Una barra de navegación superior permite un desplazamiento suave a secciones temáticas: 'Inicio', 'Comunidades Digitales', 'Recursos y Sitios Web' y 'Rutas'. Esta estructura responde directamente a la solicitud del usuario de un 'directorio' al categorizar los enlaces de los informes (Facebook, sitios web, mapas) en grupos lógicos y fáciles de encontrar. El flujo de usuario es simple: 1) Aterrizar en la introducción, 2) Usar la navegación o desplazarse a una categoría, 3) Hacer clic en una tarjeta de recurso para abrir el enlace externo. Esto es más útil que una lista plana y aborda la necesidad de "contacto" (enlaces a grupos) y "sitios de pernocta" (enlaces a herramientas de búsqueda). -->
+<!-- Visualization & Content Choices: Información del Informe: Lista de URLs (Grupos de Facebook, sitios web, enlaces de mapas, podcast). Objetivo: Informar (Proveer un directorio accesible). Método de Viz/Presentación: No se requieren gráficos. Se utiliza una cuadrícula (grid) responsive de Tailwind con 'tarjetas de recursos' (HTML/CSS). Cada tarjeta tiene un ícono (Unicode), título, descripción y un botón de enlace externo. Interacción: 1) Enlaces de navegación (JS para scroll suave). 2) Botones de recursos (etiqueta <a> de HTML para abrir enlaces). Justificación: Este diseño de tarjetas es la forma más clara y escaneable de presentar un directorio de enlaces, que es lo que el usuario solicitó. Los gráficos no son apropiados para este tipo de datos. Biblioteca/Método: Vanilla JS (para el scroll), Tailwind (para diseño/estilos). -->
+<!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Directorio Ecosistema Explorador Ágil</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container { height: 350px; }
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-amber-50 text-neutral-800 font-sans leading-relaxed">
+
+    <header class="bg-white shadow-md sticky top-0 z-50">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-amber-700">Explorador Ágil</h1>
+            <div class="hidden md:flex space-x-6">
+                <a href="#inicio" class="nav-link text-neutral-600 hover:text-amber-700 font-medium">Inicio</a>
+                <a href="#comunidades" class="nav-link text-neutral-600 hover:text-amber-700 font-medium">Comunidades</a>
+                <a href="#recursos" class="nav-link text-neutral-600 hover:text-amber-700 font-medium">Recursos</a>
+                <a href="#rutas" class="nav-link text-neutral-600 hover:text-amber-700 font-medium">Rutas</a>
+            </div>
+            <button id="mobile-menu-button" class="md:hidden text-2xl text-neutral-700">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+                </svg>
+            </button>
+        </nav>
+        <div id="mobile-menu" class="hidden md:hidden bg-white shadow-lg">
+            <a href="#inicio" class="block py-3 px-6 text-neutral-600 hover:bg-amber-50 nav-link-mobile">Inicio</a>
+            <a href="#comunidades" class="block py-3 px-6 text-neutral-600 hover:bg-amber-50 nav-link-mobile">Comunidades</a>
+            <a href="#recursos" class="block py-3 px-6 text-neutral-600 hover:bg-amber-50 nav-link-mobile">Recursos</a>
+            <a href="#rutas" class="block py-3 px-6 text-neutral-600 hover:bg-amber-50 nav-link-mobile">Rutas</a>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-6 py-12">
+        
+        <section id="inicio" class="text-center mb-20 pt-8">
+            <h2 class="text-4xl md:text-5xl font-bold text-neutral-900 mb-6">Ecosistema del Explorador Ágil en Colombia</h2>
+            <p class="text-lg text-neutral-700 max-w-3xl mx-auto">
+                Esta aplicación es un directorio interactivo de los recursos y comunidades digitales que forman el ecosistema para viajeros en viviendas móviles ("Exploradores Ágiles") en Colombia, basado en los informes proporcionados. Aquí encontrará los "puntos de encuentro" digitales (grupos sociales) y las herramientas (sitios web, mapas de rutas) para planificar sus exploraciones.
+            </p>
+        </section>
+
+        <section id="comunidades" class="mb-20">
+            <h3 class="text-3xl font-bold text-neutral-900 mb-8 text-center">Comunidades Digitales y Redes Sociales</h3>
+            <p class="text-center text-neutral-700 mb-10 max-w-2xl mx-auto">
+                Estos son los principales centros de "Inmersión Social" digital. Son grupos de Facebook donde los viajeros comparten experiencias, piden consejo y coordinan encuentros. Son el corazón de la comunidad itinerante y la principal forma de "contacto".
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                
+                <div class="bg-white rounded-lg shadow-lg overflow-hidden flex flex-col transition-transform hover:scale-105 duration-300">
+                    <div class="p-6 flex-grow">
+                        <span class="text-5xl" role="img" aria-label="bocadillos de chat">💬</span>
+                        <h4 class="text-xl font-semibold text-amber-800 my-3">Motorhome, Camping y Afines (Colombia)</h4>
+                        <p class="text-neutral-600 mb-4">Grupo de Facebook para entusiastas del camping y la vida en motorhome en Colombia.</p>
+                    </div>
+                    <div class="p-6 bg-gray-50">
+                        <a href="https://www.facebook.com/groups/109392186079689/" target="_blank" rel="noopener noreferrer" class="inline-block bg-amber-600 text-white font-semibold px-6 py-2 rounded-lg hover:bg-amber-700 transition-all shadow-md hover:shadow-lg">Visitar Grupo</a>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-lg overflow-hidden flex flex-col transition-transform hover:scale-105 duration-300">
+                    <div class="p-6 flex-grow">
+                        <span class="text-5xl" role="img" aria-label="bocadillos de chat">💬</span>
+                        <h4 class="text-xl font-semibold text-amber-800 my-3">CAMPING, AVENTURA Y OVERLAND COLOMBIA</h4>
+                        <p class="text-neutral-600 mb-4">Comunidad de Facebook centrada en la aventura, el camping y el overlanding en el país.</p>
+                    </div>
+                    <div class="p-6 bg-gray-50">
+                        <a href="https://www.facebook.com/groups/318210345037146/" target="_blank" rel="noopener noreferrer" class="inline-block bg-amber-600 text-white font-semibold px-6 py-2 rounded-lg hover:bg-amber-700 transition-all shadow-md hover:shadow-lg">Visitar Grupo</a>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-lg overflow-hidden flex flex-col transition-transform hover:scale-105 duration-300">
+                    <div class="p-6 flex-grow">
+                        <span class="text-5xl" role="img" aria-label="bocadillos de chat">💬</span>
+                        <h4 class="text-xl font-semibold text-amber-800 my-3">Overland Colombia</h4>
+                        <p class="text-neutral-600 mb-4">Grupo enfocado en la cultura Overland, viajes de larga distancia y vehículos preparados.</p>
+                    </div>
+                    <div class="p-6 bg-gray-50">
+                        <a href="https://www.facebook.com/groups/overlandcolombia/" target="_blank" rel="noopener noreferrer" class="inline-block bg-amber-600 text-white font-semibold px-6 py-2 rounded-lg hover:bg-amber-700 transition-all shadow-md hover:shadow-lg">Visitar Grupo</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="recursos" class="mb-20">
+            <h3 class="text-3xl font-bold text-neutral-900 mb-8 text-center">Sitios Web y Recursos Clave</h3>
+            <p class="text-center text-neutral-700 mb-10 max-w-2xl mx-auto">
+                Esta sección contiene la "Infraestructura de Pernocta" digital y de planificación. Incluye blogs de viajeros con información valiosa, sitios para encontrar campings (como el ejemplo de "parque la floresta" que mencionaste) y recursos generales para la vida nómada.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+
+                <div class="bg-white rounded-lg shadow-lg overflow-hidden flex flex-col transition-transform hover:scale-105 duration-300">
+                    <div class="p-6 flex-grow">
+                        <span class="text-5xl" role="img" aria-label="globo terráqueo">🌐</span>
+                        <h4 class="text-xl font-semibold text-amber-800 my-3">Viajando Simple</h4>
+                        <p class="text-neutral-600 mb-4">Blog y recursos sobre la vida viajera, minimalismo y experiencias en ruta.</p>
+                    </div>
+                    <div class="p-6 bg-gray-50">
+                        <a href="https://www.viajandosimple.com/" target="_blank" rel="noopener noreferrer" class="inline-block bg-amber-600 text-white font-semibold px-6 py-2 rounded-lg hover:bg-amber-700 transition-all shadow-md hover:shadow-lg">Visitar Sitio</a>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-lg overflow-hidden flex flex-col transition-transform hover:scale-105 duration-300">
+                    <div class="p-6 flex-grow">
+                        <span class="text-5xl" role="img" aria-label="globo terráqueo">🌐</span>
+                        <h4 class="text-xl font-semibold text-amber-800 my-3">Campers Travel Colombia</h4>
+                        <p class="text-neutral-600 mb-4">Empresa o blog dedicado a los viajes en camper por Colombia.</p>
+                    </div>
+                    <div class="p-6 bg-gray-50">
+                        <a href="https://camperstravelcolombia.com/" target="_blank" rel="noopener noreferrer" class="inline-block bg-amber-600 text-white font-semibold px-6 py-2 rounded-lg hover:bg-amber-700 transition-all shadow-md hover:shadow-lg">Visitar Sitio</a>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-lg overflow-hidden flex flex-col transition-transform hover:scale-105 duration-300">
+                    <div class="p-6 flex-grow">
+                        <span class="text-5xl" role="img" aria-label="globo terráqueo">🌐</span>
+                        <h4 class="text-xl font-semibold text-amber-800 my-3">On the Road Colombia</h4>
+                        <p class="text-neutral-600 mb-4">Otro recurso clave para viajeros, posiblemente un blog o servicio de alquiler/tours.</p>
+                    </div>
+                    <div class="p-6 bg-gray-50">
+                        <a href="https://www.ontheroadcolombia.com/" target="_blank" rel="noopener noreferrer" class="inline-block bg-amber-600 text-white font-semibold px-6 py-2 rounded-lg hover:bg-amber-700 transition-all shadow-md hover:shadow-lg">Visitar Sitio</a>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-lg shadow-lg overflow-hidden flex flex-col transition-transform hover:scale-105 duration-300">
+                    <div class="p-6 flex-grow">
+                        <span class="text-5xl" role="img" aria-label="tienda de campaña">🏕️</span>
+                        <h4 class="text-xl font-semibold text-amber-800 my-3">Pitchup (Colombia)</h4>
+                        <p class="text-neutral-600 mb-4">Plataforma de reserva para encontrar y pagar sitios de acampada y pernocta para motorhomes.</p>
+                    </div>
+                    <div class="p-6 bg-gray-50">
+                        <a href="https://www.pitchup.com/es/motorhomes/colombia/" target="_blank" rel="noopener noreferrer" class="inline-block bg-amber-600 text-white font-semibold px-6 py-2 rounded-lg hover:bg-amber-700 transition-all shadow-md hover:shadow-lg">Buscar Pernocta</a>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-lg shadow-lg overflow-hidden flex flex-col transition-transform hover:scale-105 duration-300">
+                    <div class="p-6 flex-grow">
+                        <span class="text-5xl" role="img" aria-label="radio">📻</span>
+                        <h4 class="text-xl font-semibold text-amber-800 my-3">Radio Campista (Podcast)</h4>
+                        <p class="text-neutral-600 mb-4">Podcast en iVoox con historias, consejos y cultura de la comunidad campista.</p>
+                    </div>
+                    <div class="p-6 bg-gray-50">
+                        <a href="https://www.ivoox.com/podcast-radio-campista_sq_f1477079_1.html" target="_blank" rel="noopener noreferrer" class="inline-block bg-amber-600 text-white font-semibold px-6 py-2 rounded-lg hover:bg-amber-700 transition-all shadow-md hover:shadow-lg">Escuchar Podcast</a>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-lg shadow-lg overflow-hidden flex flex-col transition-transform hover:scale-105 duration-300">
+                    <div class="p-6 flex-grow">
+                        <span class="text-5xl" role="img" aria-label="pin de ubicación">📍</span>
+                        <h4 class="text-xl font-semibold text-amber-800 my-3">Info: Murillo, Tolima</h4>
+                        <p class="text-neutral-600 mb-4">Ejemplo de información local sobre opciones de glamping, hoteles y hostales en Murillo, Tolima.</p>
+                    </div>
+                    <div class="p-6 bg-gray-50">
+                        <a href="https://www.facebook.com/vivemurillo/posts/el-municipio-de-murillo-tolima-ofrece-glamping-hoteles-y-hostales-con-bao-priva/885577427062040/" target="_blank" rel="noopener noreferrer" class="inline-block bg-amber-600 text-white font-semibold px-6 py-2 rounded-lg hover:bg-amber-700 transition-all shadow-md hover:shadow-lg">Ver Información</a>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <section id="rutas" class="mb-16">
+            <h3 class="text-3xl font-bold text-neutral-900 mb-8 text-center">Exploración de Rutas</h3>
+            <p class="text-center text-neutral-700 mb-10 max-w-2xl mx-auto">
+                Aquí se encuentran las herramientas para la exploración activa. Estos enlaces proporcionan acceso a mapas de rutas compartidas por otros viajeros, permitiendo al "Explorador Ágil" encontrar caminos, destinos y posibles puntos de pernocta.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                
+                <div class="bg-white rounded-lg shadow-lg overflow-hidden flex flex-col transition-transform hover:scale-105 duration-300">
+                    <div class="p-6 flex-grow">
+                        <span class="text-5xl" role="img" aria-label="mapa">🗺️</span>
+                        <h4 class="text-xl font-semibold text-amber-800 my-3">Wikiloc (Autocaravana Colombia)</h4>
+                        <p class="text-neutral-600 mb-4">Colección de rutas para autocaravana en Colombia, compartidas por la comunidad en Wikiloc.</p>
+                    </div>
+                    <div class="p-6 bg-gray-50">
+                        <a href="https://es.wikiloc.com/rutas/autocaravana/colombia" target="_blank" rel="noopener noreferrer" class="inline-block bg-amber-600 text-white font-semibold px-6 py-2 rounded-lg hover:bg-amber-700 transition-all shadow-md hover:shadow-lg">Ver Rutas</a>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-lg overflow-hidden flex flex-col transition-transform hover:scale-105 duration-300">
+                    <div class="p-6 flex-grow">
+                        <span class="text-5xl" role="img" aria-label="mapa">🗺️</span>
+                        <h4 class="text-xl font-semibold text-amber-800 my-3">Rutas de Antioquia</h4>
+                        <p class="text-neutral-600 mb-4">Mapa de Google con rutas y puntos de interés para explorar en el departamento de Antioquia.</p>
+
+                    </div>
+                    <div class="p-6 bg-gray-50">
+                        <a href="https://www.google.com/maps/d/u/0/viewer?mid=1fyOrBC4WiNu8tpvfoEilCjD1guaqEPI&hl=en&femb=1&ll=5.256147098030684%2C-75.07078&z=8" target="_blank" rel="noopener noreferrer" class="inline-block bg-amber-600 text-white font-semibold px-6 py-2 rounded-lg hover:bg-amber-700 transition-all shadow-md hover:shadow-lg">Ver Mapa</a>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-lg overflow-hidden flex flex-col transition-transform hover:scale-105 duration-300">
+                    <div class="p-6 flex-grow">
+                        <span class="text-5xl" role="img" aria-label="mapa">🗺️</span>
+                        <h4 class="text-xl font-semibold text-amber-800 my-3">Rutas de Boyacá</h4>
+                        <p class="text-neutral-600 mb-4">Mapa de Google que detalla un itinerario y rutas sugeridas para el departamento de Boyacá.</p>
+                    </div>
+                    <div class="p-6 bg-gray-50">
+                        <a href="https://www.google.com/maps/d/viewer?mid=1Q0j9v2k_n6D4N5T6wY9k3j8wZ-c&hl=en_US&ll=5.501061922579294%2C-73.34441500000002&z=10" target="_blank" rel="noopener noreferrer" class="inline-block bg-amber-600 text-white font-semibold px-6 py-2 rounded-lg hover:bg-amber-700 transition-all shadow-md hover:shadow-lg">Ver Mapa</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-neutral-800 text-neutral-300 py-8 mt-16">
+        <div class="container mx-auto px-6 text-center">
+            <p>&copy; 2025 Ecosistema Explorador Ágil.</p>
+            <p class="text-sm text-neutral-400 mt-2">Directorio generado a partir de los informes "El Ecosistema del Explorador Ágil" y "Redefiniendo la Jubilación Activa".</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            const navLinks = document.querySelectorAll('.nav-link, .nav-link-mobile');
+
+            mobileMenuButton.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const targetId = link.getAttribute('href');
+                    const targetElement = document.querySelector(targetId);
+                    if (targetElement) {
+                        let headerOffset = 80;
+                        let elementPosition = targetElement.getBoundingClientRect().top;
+                        let offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+                        window.scrollTo({
+                            top: offsetPosition,
+                            behavior: 'smooth'
+                        });
+                    }
+                    if (mobileMenu.classList.contains('hidden') === false) {
+                        mobileMenu.classList.add('hidden');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

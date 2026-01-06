@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar Sesión - A1ia Tech</title>
+    <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-container {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .brand {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .brand-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 0.5rem;
+        }
+
+        .brand-logo {
+            height: 45px;
+            width: auto;
+        }
+
+        .brand-text {
+            color: #FF8C00;
+            font-size: 1.8rem;
+            font-weight: normal;
+        }
+
+        .brand p {
+            color: #666;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #151F3B;
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e9ecef;
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #FF8C00;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 0.75rem;
+            background: #FF8C00;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .btn:hover {
+            background: #e07600;
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .users-demo {
+            margin-top: 2rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 5px;
+            border-left: 4px solid #99F683;
+        }
+
+        .users-demo h3 {
+            color: #151F3B;
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+        }
+
+        .user-demo {
+            margin: 0.5rem 0;
+            font-size: 0.85rem;
+            cursor: pointer;
+            padding: 0.25rem;
+            border-radius: 3px;
+            transition: background-color 0.2s;
+        }
+
+        .user-demo:hover {
+            background-color: rgba(255, 140, 0, 0.1);
+        }
+
+        .user-demo strong {
+            color: #151F3B;
+        }
+
+        .alert {
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+            border-radius: 5px;
+            display: none;
+        }
+
+        .alert.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .back-link {
+            text-align: center;
+            margin-top: 1rem;
+        }
+
+        .back-link a {
+            color: #FF8C00;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+
+        .loading {
+            display: none;
+        }
+
+        .loading.show {
+            display: inline-block;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="login-container">
+        <div class="brand">
+            <div class="brand-container">
+                <img src="/assets/logo-a1ia.png" class="brand-logo" alt="A1ia Tech">
+                <span class="brand-text">A1ia Tech</span>
+            </div>
+            <p>Diagnóstico Digital Inteligente</p>
+        </div>
+
+        <div id="alert" class="alert"></div>
+
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Contraseña:</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+
+            <button type="submit" class="btn" id="loginBtn">
+                <span class="btn-text">Iniciar Sesión</span>
+                <span class="loading">Cargando...</span>
+            </button>
+        </form>
+
+        <div class="users-demo">
+            <h3>Usuarios de Demostración:</h3>
+            <div class="user-demo">
+                <strong>Administrador:</strong> admin@a1iatech.com / admin123
+            </div>
+            <div class="user-demo">
+                <strong>Asesor:</strong> asesor@a1iatech.com / asesor123
+            </div>
+            <div class="user-demo">
+                <strong>Empresa Demo:</strong> up@empresa.com / up123
+            </div>
+        </div>
+
+        <div class="back-link">
+            <a href="/">← Volver al inicio</a>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = window.location.origin + '/api';
+
+        document.getElementById('loginForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const alertDiv = document.getElementById('alert');
+            const loginBtn = document.getElementById('loginBtn');
+
+            // Mostrar loading
+            loginBtn.disabled = true;
+            document.querySelector('.btn-text').style.display = 'none';
+            document.querySelector('.loading').classList.add('show');
+
+            try {
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Login exitoso
+                    localStorage.setItem('auth_token', data.access_token);
+                    localStorage.setItem('user_data', JSON.stringify(data.usuario));
+
+                    showAlert('Login exitoso. Redirigiendo...', 'success');
+
+                    // Redirigir según el rol
+                    setTimeout(() => {
+                        const rol = data.usuario.rol;
+                        if (rol === 'UP') {
+                            window.location.href = '../pages/dashboard.html';
+                        } else if (rol === 'ASESOR') {
+                            window.location.href = '../pages/asesor.html';
+                        } else if (rol === 'ADMIN') {
+                            window.location.href = '../pages/admin.html';
+                        } else {
+                            window.location.href = '/';
+                        }
+                    }, 1500);
+                } else {
+                    showAlert(data.detail || 'Error en el login', 'error');
+                }
+            } catch (error) {
+                showAlert('Error de conexión. Verifica que el servidor esté funcionando.', 'error');
+                console.error('Error:', error);
+            } finally {
+                // Ocultar loading
+                loginBtn.disabled = false;
+                document.querySelector('.btn-text').style.display = 'inline';
+                document.querySelector('.loading').classList.remove('show');
+            }
+        });
+
+        function showAlert(message, type) {
+            const alertDiv = document.getElementById('alert');
+            alertDiv.textContent = message;
+            alertDiv.className = `alert ${type}`;
+            alertDiv.style.display = 'block';
+
+            if (type === 'success') {
+                setTimeout(() => {
+                    alertDiv.style.display = 'none';
+                }, 3000);
+            }
+        }
+
+        // Auto-llenar credenciales para demo
+        document.querySelectorAll('.user-demo').forEach(userDemo => {
+            userDemo.addEventListener('click', function () {
+                const text = this.textContent;
+                if (text.includes('admin@a1iatech.com')) {
+                    document.getElementById('email').value = 'admin@a1iatech.com';
+                    document.getElementById('password').value = 'admin123';
+                } else if (text.includes('asesor@a1iatech.com')) {
+                    document.getElementById('email').value = 'asesor@a1iatech.com';
+                    document.getElementById('password').value = 'asesor123';
+                } else if (text.includes('up@empresa.com')) {
+                    document.getElementById('email').value = 'up@empresa.com';
+                    document.getElementById('password').value = 'up123';
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

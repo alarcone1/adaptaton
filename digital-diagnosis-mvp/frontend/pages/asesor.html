@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Asesor - A1ia Tech</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f8f9fa;
+            color: #151F3B;
+        }
+
+        .header {
+            background: white;
+            padding: 1rem 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .brand {
+            color: #FF8C00;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 20px;
+        }
+
+        .welcome-banner {
+            background: linear-gradient(135deg, #FF8C00, #ffa500);
+            color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .welcome-banner h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .welcome-banner p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #FF8C00;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid;
+            transition: transform 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .feature-card.primary {
+            border-left-color: #FF8C00;
+        }
+
+        .feature-card.secondary {
+            border-left-color: #99F683;
+        }
+
+        .feature-card.tertiary {
+            border-left-color: #6C63FF;
+        }
+
+        .feature-card h3 {
+            color: #151F3B;
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+        }
+
+        .feature-card p {
+            color: #666;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .activity-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .activity-section h3 {
+            color: #151F3B;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #FF8C00;
+        }
+
+        .activity-item {
+            padding: 1rem 0;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            background: #FF8C00;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .activity-content h4 {
+            color: #151F3B;
+            margin-bottom: 0.25rem;
+        }
+
+        .activity-content p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 1rem;
+            transition: all 0.3s;
+            margin: 0.25rem;
+        }
+
+        .btn-primary {
+            background: #FF8C00;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #99F683;
+            color: #151F3B;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid #6C63FF;
+            color: #6C63FF;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        /* ESTILOS PARA SECCIÓN DIAGNÓSTICOS COMPLETADOS */
+        .diagnosticos-section {
+            display: none;
+        }
+
+        .page-header {
+            background: linear-gradient(135deg, #FF8C00, #FFB347);
+            color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .page-header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .content-header {
+            background: #151F3B;
+            color: white;
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .content-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+        }
+
+        .filters-section {
+            padding: 1.5rem 2rem;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .filters-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr auto;
+            gap: 1rem;
+            align-items: end;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .filter-label {
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            color: #151F3B;
+        }
+
+        .filter-input {
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        .diagnosticos-list {
+            padding: 0;
+        }
+
+        .diagnostico-item {
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid #e9ecef;
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr 1fr auto;
+            gap: 1rem;
+            align-items: center;
+            transition: background-color 0.3s ease;
+        }
+
+        .diagnostico-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .diagnostico-item:last-child {
+            border-bottom: none;
+        }
+
+        .up-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .up-name {
+            font-weight: bold;
+            color: #151F3B;
+            margin-bottom: 0.25rem;
+        }
+
+        .up-sector {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .fecha-diagnostico {
+            color: #151F3B;
+            font-weight: 500;
+        }
+
+        .puntaje-global {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #FF8C00;
+        }
+
+        .puntaje-text {
+            font-size: 0.8rem;
+            color: #666;
+        }
+
+        .estado-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .estado-completado {
+            background: #e8f5e8;
+            color: #4caf50;
+        }
+
+        .dimensiones-preview {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .dimension-mini {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+        }
+
+        .dimension-nombre {
+            color: #666;
+        }
+
+        .dimension-score {
+            color: #FF8C00;
+            font-weight: bold;
+        }
+
+        .acciones {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .table-header {
+            background: #f8f9fa;
+            padding: 1rem 2rem;
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr 1fr auto;
+            gap: 1rem;
+            font-weight: bold;
+            color: #151F3B;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 2rem;
+            color: #666;
+        }
+
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #666;
+        }
+
+        @media (max-width: 768px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .filters-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .diagnostico-item {
+                grid-template-columns: 1fr;
+                gap: 0.5rem;
+            }
+
+            .table-header {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header class="header">
+        <nav class="nav">
+            <div class="brand">A1ia Tech - Dashboard Asesor</div>
+            <div class="user-info">
+                <span id="asesor-name">Asesor de Transformación Digital</span>
+                <button class="btn btn-outline" onclick="cerrarSesion()">
+                    Cerrar Sesión
+                </button>
+            </div>
+        </nav>
+    </header>
+
+    <!-- DASHBOARD PRINCIPAL -->
+    <div class="container" id="dashboard-principal">
+        <div class="welcome-banner">
+            <h1>Bienvenido, Asesor de Transformación Digital</h1>
+            <p>Gestiona el proceso de diagnóstico y acompañamiento de las Unidades Productivas asignadas</p>
+        </div>
+
+        <!-- Estadísticas -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <span class="stat-number">5</span>
+                <span class="stat-label">UPs Asignadas</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-number">2</span>
+                <span class="stat-label">Diagnósticos Pendientes</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-number">1</span>
+                <span class="stat-label">Planes en Revisión</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-number">2</span>
+                <span class="stat-label">UPs con Plan Activo</span>
+            </div>
+        </div>
+
+        <!-- Funcionalidades Principales -->
+        <div class="main-grid">
+            <!-- Nuevo Diagnóstico -->
+            <div class="feature-card primary">
+                <h3>📋 Nuevo Diagnóstico</h3>
+                <p>Inicia el proceso de diagnóstico para una Unidad Productiva. Puedes elegir entre diligenciar el
+                    cuestionario pregunta por pregunta o cargar un archivo masivo con las respuestas.</p>
+                <button class="btn btn-primary" onclick="window.location.href='asesor-cuestionario.html'">
+                    Iniciar Cuestionario
+                </button>
+            </div>
+
+            <!-- Diagnósticos Completados -->
+            <div class="feature-card secondary">
+                <h3>📊 Diagnósticos Completados</h3>
+                <p>Revisa los diagnósticos ya realizados de tus UPs. Visualiza gráficas de madurez, análisis detallados
+                    y seguimiento del progreso.</p>
+                <button class="btn btn-primary" onclick="mostrarDiagnosticosCompletados()">
+                    Ver Diagnósticos
+                </button>
+            </div>
+
+            <!-- Mis Unidades Productivas -->
+            <div class="feature-card tertiary">
+                <h3>👥 Mis Unidades Productivas</h3>
+                <p>Ve al listado completo de UPs asignadas. Revisa el estado de sus diagnósticos y planes de acción en
+                    progreso.</p>
+                <button class="btn btn-secondary" onclick="window.location.href='mis-ups.html'">
+                    Ver Mis UPs
+                </button>
+            </div>
+
+            <!-- Planes de IA Pendientes -->
+            <div class="feature-card primary">
+                <h3>🤖 Planes de IA Pendientes</h3>
+                <p>Revisa y ajusta los planes de acción generados automáticamente por la IA antes de presentarlos a las
+                    Unidades Productivas.</p>
+                <button class="btn btn-outline" onclick="alert('Funcionalidad en desarrollo')">
+                    Revisar Planes
+                </button>
+            </div>
+
+            <!-- Biblioteca de Recursos -->
+            <div class="feature-card secondary">
+                <h3>📚 Biblioteca de Recursos</h3>
+                <p>Explora el catálogo completo de recursos formativos disponibles para asignar a las UPs según sus
+                    necesidades específicas.</p>
+                <button class="btn btn-outline" onclick="alert('Funcionalidad en desarrollo')">
+                    Ver Recursos
+                </button>
+            </div>
+
+            <!-- Reportes y Estadísticas -->
+            <div class="feature-card tertiary">
+                <h3>📈 Reportes y Estadísticas</h3>
+                <p>Genera reportes de progreso de tus UPs asignadas y analiza tendencias en los diagnósticos realizados.
+                </p>
+                <button class="btn btn-outline" onclick="alert('Funcionalidad en desarrollo')">
+                    Ver Reportes
+                </button>
+            </div>
+        </div>
+
+        <!-- Actividad Reciente -->
+        <div class="activity-section">
+            <h3>Actividad Reciente</h3>
+            <div class="activity-item">
+                <div class="activity-icon">✅</div>
+                <div class="activity-content">
+                    <h4>Sistema inicializado correctamente</h4>
+                    <p>Todas las funcionalidades del MVP están operativas</p>
+                </div>
+            </div>
+            <div class="activity-item">
+                <div class="activity-icon">📊</div>
+                <div class="activity-content">
+                    <h4>Base de datos actualizada</h4>
+                    <p>119 preguntas y 25 recursos cargados exitosamente</p>
+                </div>
+            </div>
+            <div class="activity-item">
+                <div class="activity-icon">🤖</div>
+                <div class="activity-content">
+                    <h4>Conexión con IA verificada</h4>
+                    <p>Google Gemini está operativo para análisis DOFA</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECCIÓN DIAGNÓSTICOS COMPLETADOS -->
+    <div class="diagnosticos-section" id="diagnosticos-section">
+        <div class="container">
+            <div class="page-header">
+                <h1>Diagnósticos Completados</h1>
+                <p>Revisa y gestiona todos los diagnósticos realizados a tus Unidades Productivas</p>
+            </div>
+
+            <!-- Estadísticas Rápidas -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number" id="total-diagnosticos">--</div>
+                    <div class="stat-label">Total Diagnósticos</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="promedio-puntaje">--</div>
+                    <div class="stat-label">Puntaje Promedio</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="diagnosticos-mes">--</div>
+                    <div class="stat-label">Este Mes</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="ups-evaluadas">--</div>
+                    <div class="stat-label">UPs Evaluadas</div>
+                </div>
+            </div>
+
+            <!-- Contenido Principal -->
+            <div class="main-content">
+                <div class="content-header">
+                    <h2 class="content-title">Lista de Diagnósticos Realizados</h2>
+                    <button class="btn btn-secondary" onclick="volverAlDashboard()">
+                        Volver al Dashboard
+                    </button>
+                </div>
+
+                <!-- Filtros -->
+                <div class="filters-section">
+                    <div class="filters-grid">
+                        <div class="filter-group">
+                            <label class="filter-label">Buscar UP:</label>
+                            <input type="text" class="filter-input" id="filtro-nombre"
+                                placeholder="Nombre de la empresa...">
+                        </div>
+                        <div class="filter-group">
+                            <label class="filter-label">Sector:</label>
+                            <select class="filter-input" id="filtro-sector">
+                                <option value="">Todos los sectores</option>
+                                <option value="Servicios Automotrices">Servicios Automotrices</option>
+                                <option value="Belleza y Estética">Belleza y Estética</option>
+                                <option value="Alimentación">Alimentación</option>
+                                <option value="Comercio">Comercio</option>
+                                <option value="Servicios">Servicios</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label class="filter-label">Fecha:</label>
+                            <select class="filter-input" id="filtro-fecha">
+                                <option value="">Todas las fechas</option>
+                                <option value="hoy">Hoy</option>
+                                <option value="semana">Esta semana</option>
+                                <option value="mes">Este mes</option>
+                                <option value="trimestre">Último trimestre</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <button class="btn btn-primary" onclick="aplicarFiltros()">
+                                🔍 Filtrar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cabecera de Tabla -->
+                <div class="table-header">
+                    <div>Unidad Productiva</div>
+                    <div>Fecha</div>
+                    <div>Puntaje Global</div>
+                    <div>Estado</div>
+                    <div>Top Dimensiones</div>
+                    <div>Acciones</div>
+                </div>
+
+                <!-- Lista de Diagnósticos -->
+                <div class="diagnosticos-list" id="diagnosticos-container">
+                    <div class="loading">Cargando diagnósticos...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales
+        let diagnosticosData = [];
+        let diagnosticosFiltrados = [];
+
+        // Inicializar página
+        document.addEventListener('DOMContentLoaded', function () {
+            verificarAutenticacion();
+            cargarDatosUsuario();
+        });
+
+        // Funciones de navegación
+        function mostrarDiagnosticosCompletados() {
+            document.getElementById('dashboard-principal').style.display = 'none';
+            document.getElementById('diagnosticos-section').style.display = 'block';
+            cargarDiagnosticos();
+        }
+
+        function volverAlDashboard() {
+            document.getElementById('dashboard-principal').style.display = 'block';
+            document.getElementById('diagnosticos-section').style.display = 'none';
+        }
+
+        // Cargar diagnósticos del asesor
+        async function cargarDiagnosticos() {
+            try {
+                // TODO: Reemplazar con llamada real a API
+                // const response = await fetch('/api/asesor/diagnosticos-completados', {
+                //     headers: { 'Authorization': `Bearer ${localStorage.getItem('auth_token')}` }
+                // });
+                // const data = await response.json();
+
+                // Datos de ejemplo (reemplazar con llamada real)
+                diagnosticosData = [
+                    {
+                        id: 1,
+                        up: {
+                            nombre: "Llantería El Pinchazo",
+                            sector: "Servicios Automotrices",
+                            email: "info@elpinchazo.com"
+                        },
+                        fecha_diagnostico: "2025-09-05",
+                        puntaje_global: 67,
+                        estado: "Completado",
+                        dimensiones: [
+                            { nombre: "Estrategia Digital", puntaje: 72 },
+                            { nombre: "Tecnología", puntaje: 58 },
+                            { nombre: "Procesos", puntaje: 71 }
+                        ]
+                    },
+                    {
+                        id: 2,
+                        up: {
+                            nombre: "Salón de Belleza Betty la Fea",
+                            sector: "Belleza y Estética",
+                            email: "betty@salon.com"
+                        },
+                        fecha_diagnostico: "2025-09-03",
+                        puntaje_global: 78,
+                        estado: "Completado",
+                        dimensiones: [
+                            { nombre: "Cultura Digital", puntaje: 85 },
+                            { nombre: "Talento Digital", puntaje: 82 },
+                            { nombre: "Estrategia Digital", puntaje: 76 }
+                        ]
+                    },
+                    {
+                        id: 3,
+                        up: {
+                            nombre: "Restaurante Don Pepe",
+                            sector: "Alimentación",
+                            email: "donpepe@restaurante.com"
+                        },
+                        fecha_diagnostico: "2025-09-01",
+                        puntaje_global: 52,
+                        estado: "Completado",
+                        dimensiones: [
+                            { nombre: "Procesos", puntaje: 65 },
+                            { nombre: "Tecnología", puntaje: 48 },
+                            { nombre: "Datos y Analytics", puntaje: 38 }
+                        ]
+                    }
+                ];
+
+                diagnosticosFiltrados = [...diagnosticosData];
+                mostrarEstadisticas();
+                mostrarDiagnosticos();
+                configurarFiltros();
+
+            } catch (error) {
+                console.error('Error cargando diagnósticos:', error);
+                mostrarError();
+            }
+        }
+
+        function mostrarEstadisticas() {
+            const totalDiagnosticos = diagnosticosData.length;
+            const promedioPuntaje = Math.round(
+                diagnosticosData.reduce((sum, d) => sum + d.puntaje_global, 0) / totalDiagnosticos
+            );
+
+            // Diagnósticos de este mes
+            const mesActual = new Date().getMonth();
+            const diagnosticosMes = diagnosticosData.filter(d => {
+                const fechaDiag = new Date(d.fecha_diagnostico);
+                return fechaDiag.getMonth() === mesActual;
+            }).length;
+
+            // UPs únicas evaluadas
+            const upsUnicas = new Set(diagnosticosData.map(d => d.up.nombre)).size;
+
+            document.getElementById('total-diagnosticos').textContent = totalDiagnosticos;
+            document.getElementById('promedio-puntaje').textContent = promedioPuntaje + '/100';
+            document.getElementById('diagnosticos-mes').textContent = diagnosticosMes;
+            document.getElementById('ups-evaluadas').textContent = upsUnicas;
+        }
+
+        function mostrarDiagnosticos() {
+            const container = document.getElementById('diagnosticos-container');
+
+            if (diagnosticosFiltrados.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📊</div>
+                        <h3>No hay diagnósticos completados</h3>
+                        <p>No se encontraron diagnósticos que coincidan con los filtros aplicados.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = diagnosticosFiltrados.map(diagnostico => `
+                <div class="diagnostico-item">
+                    <div class="up-info">
+                        <div class="up-name">${diagnostico.up.nombre}</div>
+                        <div class="up-sector">${diagnostico.up.sector}</div>
+                    </div>
+                    <div class="fecha-diagnostico">
+                        ${formatearFecha(diagnostico.fecha_diagnostico)}
+                    </div>
+                    <div>
+                        <div class="puntaje-global">${diagnostico.puntaje_global}</div>
+                        <div class="puntaje-text">/100 puntos</div>
+                    </div>
+                    <div>
+                        <span class="estado-badge estado-${diagnostico.estado.toLowerCase().replace(' ', '-')}">
+                            ${diagnostico.estado}
+                        </span>
+                    </div>
+                    <div class="dimensiones-preview">
+                        ${diagnostico.dimensiones.slice(0, 3).map(dim => `
+                            <div class="dimension-mini">
+                                <span class="dimension-nombre">${dim.nombre.substring(0, 12)}...</span>
+                                <span class="dimension-score">${dim.puntaje}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="acciones">
+                        <button class="btn btn-primary" onclick="verResultados(${diagnostico.id})">
+                            Ver Resultados
+                        </button>
+                        <button class="btn btn-outline" onclick="descargarReporte(${diagnostico.id})">
+                            📄 PDF
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function configurarFiltros() {
+            // Configurar eventos de filtros
+            document.getElementById('filtro-nombre').addEventListener('input', aplicarFiltros);
+            document.getElementById('filtro-sector').addEventListener('change', aplicarFiltros);
+            document.getElementById('filtro-fecha').addEventListener('change', aplicarFiltros);
+        }
+
+        function aplicarFiltros() {
+            const filtroNombre = document.getElementById('filtro-nombre').value.toLowerCase();
+            const filtroSector = document.getElementById('filtro-sector').value;
+            const filtroFecha = document.getElementById('filtro-fecha').value;
+
+            diagnosticosFiltrados = diagnosticosData.filter(diagnostico => {
+                // Filtro por nombre
+                const cumpleNombre = diagnostico.up.nombre.toLowerCase().includes(filtroNombre);
+
+                // Filtro por sector
+                const cumpleSector = !filtroSector || diagnostico.up.sector === filtroSector;
+
+                // Filtro por fecha
+                let cumpleFecha = true;
+                if (filtroFecha) {
+                    const fechaDiag = new Date(diagnostico.fecha_diagnostico);
+                    const hoy = new Date();
+
+                    switch (filtroFecha) {
+                        case 'hoy':
+                            cumpleFecha = fechaDiag.toDateString() === hoy.toDateString();
+                            break;
+                        case 'semana':
+                            const inicioSemana = new Date(hoy);
+                            inicioSemana.setDate(hoy.getDate() - 7);
+                            cumpleFecha = fechaDiag >= inicioSemana;
+                            break;
+                        case 'mes':
+                            cumpleFecha = fechaDiag.getMonth() === hoy.getMonth() &&
+                                fechaDiag.getFullYear() === hoy.getFullYear();
+                            break;
+                        case 'trimestre':
+                            const inicioTrimestre = new Date(hoy);
+                            inicioTrimestre.setMonth(hoy.getMonth() - 3);
+                            cumpleFecha = fechaDiag >= inicioTrimestre;
+                            break;
+                    }
+                }
+
+                return cumpleNombre && cumpleSector && cumpleFecha;
+            });
+
+            mostrarDiagnosticos();
+        }
+
+        function verResultados(diagnosticoId) {
+            // Redirigir a la página de resultados específica
+            window.location.href = `dashboard-resultado.html?diagnostico_id=${diagnosticoId}`;
+        }
+
+        function descargarReporte(diagnosticoId) {
+            // TODO: Implementar descarga de reporte
+            alert(`Descargando reporte del diagnóstico ${diagnosticoId}...`);
+        }
+
+        function formatearFecha(fechaString) {
+            const fecha = new Date(fechaString);
+            return fecha.toLocaleDateString('es-ES', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            });
+        }
+
+        function mostrarError() {
+            const container = document.getElementById('diagnosticos-container');
+            container.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">⚠️</div>
+                    <h3>Error al cargar diagnósticos</h3>
+                    <p>No se pudieron cargar los diagnósticos. Por favor, intenta de nuevo.</p>
+                    <button class="btn btn-primary" onclick="cargarDiagnosticos()">
+                        Reintentar
+                    </button>
+                </div>
+            `;
+        }
+
+        function cargarDatosUsuario() {
+            const userData = JSON.parse(localStorage.getItem('user_data') || '{}');
+            if (userData.nombre) {
+                document.getElementById('asesor-name').textContent = userData.nombre;
+            }
+        }
+
+        function verificarAutenticacion() {
+            const token = localStorage.getItem('auth_token');
+            const userData = JSON.parse(localStorage.getItem('user_data') || '{}');
+
+            if (!token) {
+                alert('Sesión expirada. Redirigiendo al login...');
+                window.location.href = 'login.html';
+                return;
+            }
+
+            if (userData.rol !== 'ASESOR') {
+                alert('Acceso denegado. Esta página es solo para asesores.');
+                window.location.href = '/';
+                return;
+            }
+        }
+
+        function cerrarSesion() {
+            localStorage.removeItem('auth_token');
+            localStorage.removeItem('user_data');
+            window.location.href = 'login.html';
+        }
+    </script>
+</body>
+
+</html>

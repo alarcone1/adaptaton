@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis UPs - Asesor A1ia Tech</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f8f9fa;
+            color: #151F3B;
+        }
+
+        .header {
+            background: white;
+            padding: 1rem 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .brand {
+            color: #FF8C00;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 20px;
+        }
+
+        .page-header {
+            background: linear-gradient(135deg, #FF8C00, #ffa500);
+            color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .stats-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #FF8C00;
+            display: block;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .ups-container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .ups-header {
+            background: #151F3B;
+            color: white;
+            padding: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .ups-grid {
+            padding: 2rem;
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .up-card {
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 1.5rem;
+            transition: all 0.3s;
+        }
+
+        .up-card:hover {
+            border-color: #FF8C00;
+            transform: translateY(-2px);
+        }
+
+        .up-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .up-info h3 {
+            color: #151F3B;
+            margin-bottom: 0.5rem;
+        }
+
+        .up-info p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .up-status {
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .status-sin-diagnostico {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .status-diagnostico-completado {
+            background: #e8f5e8;
+            color: #2e7d32;
+        }
+
+        .status-en-progreso {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+
+        .up-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: #FF8C00;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #99F683;
+            color: #151F3B;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid #FF8C00;
+            color: #FF8C00;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #666;
+        }
+
+        .empty-state h3 {
+            margin-bottom: 1rem;
+            color: #151F3B;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #666;
+        }
+    </style>
+</head>
+
+<body>
+    <header class="header">
+        <nav class="nav">
+            <div class="brand">A1ia Tech - Mis UPs</div>
+            <div>
+                <button class="btn btn-secondary" onclick="window.location.href='asesor.html'">
+                    Volver al Dashboard
+                </button>
+            </div>
+        </nav>
+    </header>
+
+    <div class="container">
+        <div class="page-header">
+            <h1>Mis Unidades Productivas</h1>
+            <p>Gestiona el progreso de diagnóstico y acompañamiento de tus UPs asignadas</p>
+        </div>
+
+        <!-- Estadísticas -->
+        <div class="stats-cards">
+            <div class="stat-card">
+                <span class="stat-number" id="total-ups">-</span>
+                <span class="stat-label">UPs Asignadas</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-number" id="sin-diagnostico">-</span>
+                <span class="stat-label">Sin Diagnóstico</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-number" id="diagnosticos-completados">-</span>
+                <span class="stat-label">Diagnósticos Completados</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-number" id="planes-activos">-</span>
+                <span class="stat-label">Planes Activos</span>
+            </div>
+        </div>
+
+        <!-- Lista de UPs -->
+        <div class="ups-container">
+            <div class="ups-header">
+                <h2>Lista de Unidades Productivas</h2>
+                <button class="btn btn-primary" onclick="window.location.href='asesor-cuestionario.html'">
+                    + Nuevo Diagnóstico
+                </button>
+            </div>
+            <div class="ups-grid" id="ups-grid">
+                <div class="loading">
+                    Cargando Unidades Productivas...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Cargar UPs al inicializar
+        document.addEventListener('DOMContentLoaded', function () {
+            cargarMisUPs();
+        });
+
+        async function cargarMisUPs() {
+            try {
+                const token = localStorage.getItem('auth_token');
+                const response = await fetch('/api/usuarios/asesor/mis-ups', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    mostrarUPs(data.ups);
+                    actualizarEstadisticas(data.ups);
+                } else {
+                    mostrarError('Error cargando Unidades Productivas');
+                }
+            } catch (error) {
+                mostrarError('Error de conexión');
+            }
+        }
+
+        function mostrarUPs(ups) {
+            const container = document.getElementById('ups-grid');
+
+            if (ups.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <h3>No tienes UPs asignadas</h3>
+                        <p>Contacta al administrador para que te asigne Unidades Productivas</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = '';
+
+            ups.forEach(up => {
+                const upCard = document.createElement('div');
+                upCard.className = 'up-card';
+
+                // Determinar estado (simulado por ahora)
+                const estado = determinarEstado(up);
+
+                upCard.innerHTML = `
+                    <div class="up-header">
+                        <div class="up-info">
+                            <h3>${up.nombre}</h3>
+                            <p><strong>Email:</strong> ${up.email}</p>
+                            <p><strong>Sector:</strong> ${up.sector || 'No especificado'}</p>
+                            <p><strong>Tamaño:</strong> ${up.tamano_empresa || 'No especificado'}</p>
+                        </div>
+                        <span class="up-status ${estado.clase}">${estado.texto}</span>
+                    </div>
+                    <div class="up-actions">
+                        ${generarAcciones(up, estado)}
+                    </div>
+                `;
+
+                container.appendChild(upCard);
+            });
+        }
+
+        function determinarEstado(up) {
+            // Por ahora simulamos el estado, en el futuro vendrá de la API
+            const random = Math.random();
+            if (random < 0.4) {
+                return { clase: 'status-sin-diagnostico', texto: 'Sin Diagnóstico' };
+            } else if (random < 0.8) {
+                return { clase: 'status-diagnostico-completado', texto: 'Diagnóstico Completado' };
+            } else {
+                return { clase: 'status-en-progreso', texto: 'Plan en Progreso' };
+            }
+        }
+
+        function generarAcciones(up, estado) {
+            let acciones = '';
+
+            if (estado.texto === 'Sin Diagnóstico') {
+                acciones = `
+                    <button class="btn btn-primary" onclick="iniciarDiagnostico('${up.id}')">
+                        Iniciar Diagnóstico
+                    </button>
+                `;
+            } else if (estado.texto === 'Diagnóstico Completado') {
+                acciones = `
+                    <button class="btn btn-secondary" onclick="verResultados('${up.id}')">
+                        Ver Resultados
+                    </button>
+                    <button class="btn btn-outline" onclick="iniciarDiagnostico('${up.id}')">
+                        Nuevo Diagnóstico
+                    </button>
+                `;
+            } else {
+                acciones = `
+                    <button class="btn btn-secondary" onclick="verProgreso('${up.id}')">
+                        Ver Progreso
+                    </button>
+                    <button class="btn btn-outline" onclick="verResultados('${up.id}')">
+                        Ver Diagnóstico
+                    </button>
+                `;
+            }
+
+            return acciones;
+        }
+
+        function actualizarEstadisticas(ups) {
+            document.getElementById('total-ups').textContent = ups.length;
+
+            // Contar estados reales
+            let sinDiagnostico = 0;
+            let completados = 0;
+            let planesActivos = 0;
+
+            ups.forEach(up => {
+                const estado = determinarEstado(up);
+                if (estado.texto === 'Sin Diagnóstico') sinDiagnostico++;
+                else if (estado.texto === 'Diagnóstico Completado') completados++;
+                else if (estado.texto === 'Plan en Progreso') planesActivos++;
+            });
+
+            document.getElementById('sin-diagnostico').textContent = sinDiagnostico;
+            document.getElementById('diagnosticos-completados').textContent = completados;
+            document.getElementById('planes-activos').textContent = planesActivos;
+        }
+
+        function mostrarError(mensaje) {
+            const container = document.getElementById('ups-grid');
+            container.innerHTML = `
+                <div class="empty-state">
+                    <h3>Error</h3>
+                    <p>${mensaje}</p>
+                    <button class="btn btn-primary" onclick="cargarMisUPs()">Reintentar</button>
+                </div>
+            `;
+        }
+
+        function iniciarDiagnostico(upId) {
+            // Redirigir a la página de cuestionario con la UP preseleccionada
+            window.location.href = `asesor-cuestionario.html?up_id=${upId}`;
+        }
+
+        function verResultados(upId) {
+            // Por ahora mostrar mensaje, luego será página de resultados
+            alert(`Ver resultados de diagnóstico para UP ${upId}. Funcionalidad en desarrollo.`);
+        }
+
+        function verProgreso(upId) {
+            // Por ahora mostrar mensaje, luego será página de seguimiento
+            alert(`Ver progreso de plan para UP ${upId}. Funcionalidad en desarrollo.`);
+        }
+
+        // Verificar autenticación
+        if (!localStorage.getItem('auth_token')) {
+            alert('Sesión expirada. Redirigiendo al login...');
+            window.location.href = 'login.html';
+        }
+
+        // Verificar que sea asesor
+        const userData = JSON.parse(localStorage.getItem('user_data') || '{}');
+        if (userData.rol !== 'ASESOR') {
+            alert('Acceso denegado. Esta página es solo para asesores.');
+            window.location.href = '/';
+        }
+    </script>
+</body>
+
+</html>

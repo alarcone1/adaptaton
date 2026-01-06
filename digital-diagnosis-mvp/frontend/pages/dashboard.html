@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - A1ia Tech</title>
+    <link rel="stylesheet" href="../styles/dashboard.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f8f9fa;
+            color: #151F3B;
+        }
+
+        .header {
+            background: white;
+            padding: 1rem 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .brand {
+            color: #FF8C00;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .btn-logout {
+            background: #FF8C00;
+            color: white;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 20px;
+        }
+
+        .welcome {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .welcome h1 {
+            color: #151F3B;
+            margin-bottom: 1rem;
+        }
+
+        .welcome p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        .actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .action-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            transition: transform 0.3s;
+        }
+
+        .action-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .action-card h3 {
+            color: #151F3B;
+            margin-bottom: 1rem;
+        }
+
+        .action-card p {
+            color: #666;
+            margin-bottom: 2rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background: #FF8C00;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #99F683;
+            color: #151F3B;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid #FF8C00;
+            color: #FF8C00;
+        }
+
+        .status {
+            background: #99F683;
+            color: #151F3B;
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 2rem;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .api-test {
+            background: white;
+            padding: 1rem;
+            border-radius: 5px;
+            margin-top: 2rem;
+            border-left: 4px solid #FF8C00;
+        }
+
+        .api-test h4 {
+            margin-bottom: 0.5rem;
+        }
+
+        .api-test p {
+            font-size: 0.9rem;
+            color: #666;
+        }
+    </style>
+</head>
+
+<body>
+    <header class="header">
+        <nav class="nav">
+            <div class="brand">A1ia Tech</div>
+            <div class="user-info">
+                <span>Bienvenido, <strong id="user-name">Usuario</strong></span>
+                <button class="btn-logout" onclick="logout()">Cerrar Sesión</button>
+            </div>
+        </nav>
+    </header>
+
+    <div class="container">
+        <div class="status">
+            🎉 ¡MVP Funcional! Todas las APIs del backend están operativas
+        </div>
+
+        <div class="welcome">
+            <h1>Dashboard de Unidad Productiva</h1>
+            <p>
+                Bienvenido a tu herramienta de diagnóstico digital. Desde aquí puedes
+                acceder a todas las funcionalidades del MVP.
+            </p>
+        </div>
+
+        <div class="actions">
+            <div class="action-card">
+                <h3>📋 Cuestionario de Diagnóstico</h3>
+                <p>Responde 119 preguntas inteligentes para evaluar la madurez digital de tu empresa.</p>
+                <button class="btn btn-primary" onclick="testAPI('/api/cuestionario/estructura')">
+                    Ver Estructura del Cuestionario
+                </button>
+            </div>
+
+            <div class="action-card">
+                <h3>🤖 Motor de IA</h3>
+                <p>Prueba la integración con Google Gemini para análisis DOFA automático.</p>
+                <button class="btn btn-secondary" onclick="testAPI('/api/diagnostico/test-ia')">
+                    Test Conexión Gemini
+                </button>
+            </div>
+
+            <div class="action-card">
+                <h3>📚 Biblioteca de Recursos</h3>
+                <p>Explora el catálogo de 28+ recursos formativos para empresas familiares.</p>
+                <button class="btn btn-outline" onclick="testAPI('/api/recursos/catalogo')">
+                    Ver Catálogo de Recursos
+                </button>
+            </div>
+
+            <div class="action-card">
+                <h3>📊 APIs del Sistema</h3>
+                <p>Accede a la documentación completa de las APIs del MVP.</p>
+                <a href="/docs" class="btn btn-primary" target="_blank">Abrir API Docs</a>
+            </div>
+
+            <div class="action-card">
+                <h3>💾 Base de Datos</h3>
+                <p>El sistema ha cargado correctamente las 6 dimensiones de madurez digital.</p>
+                <button class="btn btn-secondary" onclick="showDimensiones()">
+                    Ver Dimensiones Cargadas
+                </button>
+            </div>
+
+            <div class="action-card">
+                <h3>❤️ Estado del Sistema</h3>
+                <p>Verifica que todos los componentes del MVP estén funcionando correctamente.</p>
+                <button class="btn btn-outline" onclick="testAPI('/health')">
+                    Health Check
+                </button>
+            </div>
+        </div>
+
+        <div id="api-result" class="api-test" style="display: none;">
+            <h4>Resultado de la API:</h4>
+            <pre id="api-content"></pre>
+        </div>
+    </div>
+
+    <script>
+        // Cargar información del usuario
+        const userData = JSON.parse(localStorage.getItem('user_data') || '{}');
+        if (userData.nombre) {
+            document.getElementById('user-name').textContent = userData.nombre;
+        }
+
+        function logout() {
+            localStorage.removeItem('auth_token');
+            localStorage.removeItem('user_data');
+            window.location.href = '/';
+        }
+
+        async function testAPI(endpoint) {
+            const token = localStorage.getItem('auth_token');
+            const resultDiv = document.getElementById('api-result');
+            const contentDiv = document.getElementById('api-content');
+
+            try {
+                const response = await fetch(window.location.origin + endpoint, {
+                    headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+                });
+
+                const data = await response.json();
+
+                // Presentación mejorada básica
+                if (endpoint.includes('cuestionario')) {
+                    contentDiv.innerHTML = `
+                <div class="success-box">📋 Cuestionario cargado: ${data.total_preguntas} preguntas</div>
+                <div class="question-card">
+                    <div class="question-title">Ejemplo: ${data.preguntas[0].texto_pregunta}</div>
+                    <div class="question-options">Opciones: ${data.preguntas[0].opciones_respuesta.length} respuestas con puntuación</div>
+                </div>
+            `;
+                } else if (endpoint.includes('test-ia')) {
+                    const status = data.gemini_disponible ? 'CONECTADO ✅' : 'ERROR ❌';
+                    const boxClass = data.gemini_disponible ? 'success-box' : 'error-box';
+                    contentDiv.innerHTML = `
+                <div class="${boxClass}">🤖 Google Gemini: ${status}</div>
+                <div class="question-card">Modelo: ${data.modelo || 'gemini-pro'}</div>
+            `;
+                } else if (endpoint.includes('recursos')) {
+                    contentDiv.innerHTML = `
+                <div class="success-box">📚 Recursos cargados: ${data.total_recursos}</div>
+                <div class="question-card">
+                    <div class="question-title">Ejemplo: ${data.recursos[0].titulo}</div>
+                    <div class="question-options">${data.recursos[0].descripcion}</div>
+                </div>
+            `;
+                } else {
+                    contentDiv.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+                }
+
+                resultDiv.style.display = 'block';
+                resultDiv.scrollIntoView({ behavior: 'smooth' });
+            } catch (error) {
+                contentDiv.innerHTML = `<div class="error-box">Error: ${error.message}</div>`;
+                resultDiv.style.display = 'block';
+            }
+        }
+
+        function showDimensiones() {
+            const dimensiones = {
+                "1": "Estrategia y Liderazgo Digital",
+                "2": "Procesos, Operaciones y Datos",
+                "3": "Marketing y Experiencia del Cliente",
+                "4": "Tecnología e Infraestructura",
+                "5": "Cultura y Talento Humano",
+                "6": "Ciberseguridad y Gobernanza"
+            };
+
+            const contentDiv = document.getElementById('api-content');
+            contentDiv.textContent = JSON.stringify(dimensiones, null, 2);
+            document.getElementById('api-result').style.display = 'block';
+        }
+
+        // Verificar autenticación
+        if (!localStorage.getItem('auth_token')) {
+            alert('Sesión expirada. Redirigiendo al login...');
+            window.location.href = 'login.html';
+        }
+    </script>
+</body>
+
+</html>

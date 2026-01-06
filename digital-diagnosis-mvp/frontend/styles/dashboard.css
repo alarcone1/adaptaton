@@ -1,0 +1,56 @@
+.api-result {
+    background: white;
+    padding: 1rem;
+    border-radius: 10px;
+    margin-top: 2rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.success-box {
+    background: #99F683;
+    color: #151F3B;
+    padding: 1rem;
+    border-radius: 5px;
+    text-align: center;
+    font-weight: bold;
+    margin-bottom: 1rem;
+}
+
+.error-box {
+    background: #e74c3c;
+    color: white;
+    padding: 1rem;
+    border-radius: 5px;
+    text-align: center;
+    font-weight: bold;
+}
+
+.question-card {
+    background: #f8f9fa;
+    padding: 1rem;
+    margin: 1rem 0;
+    border-left: 4px solid #FF8C00;
+    border-radius: 5px;
+}
+
+.question-title {
+    color: #151F3B;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.question-options {
+    background: white;
+    padding: 0.5rem;
+    border-radius: 3px;
+    font-size: 0.9rem;
+}
+
+pre {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 5px;
+    overflow-x: auto;
+    font-size: 0.85rem;
+    line-height: 1.4;
+}
